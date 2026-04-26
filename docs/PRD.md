@@ -64,6 +64,11 @@
 - Clicking a result opens the candidate profile inline (or navigates to `/app/profile/[id]`).
 - Returns useful results in < 5s on demo hardware (latency budget for the live demo).
 
+**Current demo implementation notes:**
+- Talent Search is Manager-view only. Engineer-view navigation hides `/app/search`, and direct access redirects to `/app/teams`.
+- Results include UI filters for **Open to transfer only** and minimum match score (`All`, `50+`, `70+`, `85+`).
+- Candidate profiles opened from Manager view show a local match score card for the manager's Payments Architecture team.
+
 ### Feature 3 — Team & Project Discovery Portal  ·  SCRUM-16  ·  Owner: Sahib
 **Description:** A portal for engineers to browse internal teams, see what they work on, and proactively signal interest before any job posting exists.
 
@@ -76,6 +81,12 @@
 - `/app/teams` lists teams with filter chips for tech stack and project type.
 - `/app/teams/[slug]` shows: current projects, key technologies, owned services, skill gaps, "Signal interest" button.
 - For demo, **2–3 well-seeded team pages are sufficient** (PRD explicitly says this can be lighter than features 1–2).
+
+**Current demo implementation notes:**
+- Engineer view highlights **Best fit teams** based on Rayan's profile before the regular filters.
+- Team current projects link to `/app/teams/[slug]/projects/[index]` detail pages with owner, timeline, problem, approach, metrics, milestones, risks, and collaborators.
+- Engineer signaling captures intent (`coffee-chat` or `role-interest`) plus a manager-facing message.
+- Manager view has **My team** for Payments Architecture, editable mission/current projects, editable owned project detail pages, and `/app/interests` for read/star/follow-up workflow.
 
 ## 4. Success metrics (pilot)
 | Category | Metric | Target |
@@ -94,6 +105,7 @@ These are pilot/post-MVP metrics. For the **showcase demo**, success = the three
 3. Basic AI matching between query and profiles (Feature 2).
 4. Team & project discovery pages (Feature 3).
 5. Engineer ability to review / edit / publish profile (Feature 1).
+6. Role-specific demo surfaces: Engineer view for profile/team discovery; Manager view for talent search, managed-team editing, and interest inbox.
 
 ### Explicitly excluded
 - Full org intelligence dashboards for executives.
@@ -109,7 +121,8 @@ These are pilot/post-MVP metrics. For the **showcase demo**, success = the three
 ## 6. User flows (from design doc)
 1. **Engineer creates & reviews expertise profile** — Connect tools (mocked) → ingest artifacts → AI generates draft → engineer reviews → edit preferences → publish.
 2. **Manager searches for internal talent** — Navigate to search → enter skill query → AI matches → view ranked results → open candidate profile → contact.
-3. **Engineer explores teams & signals interest** — Browse / filter teams → open team page → review fit → signal interest → manager notified.
+3. **Engineer explores teams & signals interest** — Browse best-fit teams / filter teams → open team page → review projects and fit → signal interest with intent/message → manager notified.
+3a. **Manager reviews team interest** — Open team inbox → filter read/unread or starred → add follow-ups → open engineer profiles with team match score.
 4. **Promotion reviewer evaluates engineer profile** *(supporting flow, not a primary MVP surface)* — Access profile → review evidence → decide.
 
 ## 7. Out of scope of this MVP, on the roadmap

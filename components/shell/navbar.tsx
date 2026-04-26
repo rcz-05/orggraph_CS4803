@@ -3,15 +3,23 @@ import Link from "next/link";
 import { getRole } from "@/lib/session-server";
 import { RoleSwitcher } from "./role-switcher";
 
-const NAV: { href: string; label: string }[] = [
-  { href: "/app", label: "Dashboard" },
-  { href: "/app/profile", label: "My profile" },
-  { href: "/app/search", label: "Talent search" },
-  { href: "/app/teams", label: "Teams" },
-];
-
 export async function Navbar() {
   const role = await getRole();
+  const nav =
+    role === "manager"
+      ? [
+          { href: "/app", label: "Dashboard" },
+          { href: "/app/teams/payments-architecture", label: "My team" },
+          { href: "/app/search", label: "Talent search" },
+          { href: "/app/teams", label: "Teams" },
+          { href: "/app/interests", label: "Interests" },
+        ]
+      : [
+          { href: "/app", label: "Dashboard" },
+          { href: "/app/profile", label: "My profile" },
+          { href: "/app/teams", label: "Teams" },
+          { href: "/app/interests", label: "Interests" },
+        ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#eee] bg-white/90 backdrop-blur-md">
@@ -24,7 +32,7 @@ export async function Navbar() {
             OrgGraph.
           </Link>
           <nav className="hidden gap-6 text-[13px] font-medium text-[#666] md:flex">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 import { cn } from "@/lib/utils";
@@ -18,12 +18,21 @@ function setCookie(name: string, value: string) {
 
 export function RoleSwitcher({ current }: { current: Role }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
 
   function pick(role: Role) {
     if (role === current) return;
     setCookie(COOKIE_NAMES.role, role);
-    startTransition(() => router.refresh());
+    startTransition(() => {
+      if (role === "engineer" && pathname.startsWith("/app/search")) {
+        router.push("/app/teams");
+      } else if (role === "manager" && pathname.startsWith("/app/profile")) {
+        router.push("/app/teams/payments-architecture");
+      } else {
+        router.refresh();
+      }
+    });
   }
 
   return (

@@ -18,11 +18,12 @@ This is the **product application** repo for OrgGraph. The marketing landing pag
 
 | Feature | Surface | What it does |
 | --- | --- | --- |
-| **Engineer profiles** | `/app/profile`, `/app/profile/[id]` | Auto-generates an evidence-based profile from seeded GitHub/Jira/Slack artifacts. Every skill cites a specific PR, ticket, or thread. Engineers edit preferences (interests, growth goals, *open to transfer*) and publish. |
-| **Talent search** | `/app/search` | Manager-facing free-text search ("fraud detection", "React design systems"). AI-ranks all 8 seeded profiles against the query, shows match score, matched skills, and transfer-interest. Click → engineer profile. |
-| **Team portal** | `/app/teams`, `/app/teams/[slug]` | Engineer-facing list of 5 internal teams with tech-stack and project-type filters. Detail page shows mission, current projects, owned services, skill gaps, and a "Signal interest" CTA. In Manager view the CTA is replaced with a **Recent Interest** panel listing engineers who recently signaled. |
+| **Engineer profiles** | `/app/profile`, `/app/profile/[id]`, `/app/profile/[id]/skill/[index]`, `/app/profile/[id]/project/[index]` | Auto-generates an evidence-based profile from seeded GitHub/Jira/Slack artifacts. Skills and project themes link to detail pages. Engineers edit draft preferences, then publishing locks the profile. In Manager view, candidate profiles show a Payments Architecture match box. |
+| **Talent search** | `/app/search` | Manager-only free-text search ("fraud detection", "React design systems"). AI-ranks seeded profiles against the query, shows match score, matched skills, and transfer-interest. UI filters support **Open to transfer only** and minimum score thresholds. Engineer view is redirected away from this route. |
+| **Team portal** | `/app/teams`, `/app/teams/[slug]`, `/app/teams/[slug]/projects/[index]` | Role-aware team browsing. Engineer view highlights **Best fit teams** from Rayan's profile and supports signaling interest with intent + message. Manager view swaps "My profile" for **My team**, makes Payments Architecture mission/projects editable, and exposes detailed project pages. |
+| **Interest center** | `/app/interests` | Role-aware interest tracking. Engineer view shows Rayan's sent interests and follow-ups. Manager view shows the Payments Architecture inbox with read/unread, star, follow-up, and priority sorting. |
 
-Switch between Engineer view and Manager view via the role switcher in the navbar (top-right). Default identity is `eng-rayan` via cookie — no real auth, demo only.
+Switch between Engineer view and Manager view via the role switcher in the navbar (top-right). Default identity is `eng-rayan` via cookie — no real auth, demo only. Role-specific routing is intentional: Manager view owns Talent Search and My Team; Engineer view owns My Profile and team discovery.
 
 ## Run locally
 
@@ -59,20 +60,21 @@ No database, no auth, no real GitHub/Jira/Slack OAuth — all data is seeded JSO
 
 ```
 app/                          # Next.js App Router
-  app/                        # in-app routes (dashboard, profile, search, teams)
+  app/                        # in-app routes (dashboard, profile, search, teams, interests)
   api/                        # /api/profile/generate, /api/search, /api/teams/signal, /api/engineers
 components/
   shell/                      # navbar, role switcher
   shared/                     # PostitCard, CaveatHeading, Eyebrow
   ui/                         # shadcn primitives (button, card, input, badge, skeleton)
-  profile/                    # ProfileView, PreferencesEditor, GenerateEmptyState
-  search/                     # ResultRow, MatchScoreBadge
+  interests/                  # InterestCenter
+  profile/                    # ProfileView, PreferencesEditor, GenerateEmptyState, detail/edit helpers
+  search/                     # SearchPageClient, ResultRow, MatchScoreBadge
   teams/                      # TeamCard, TeamFilters, SignalInterestButton, RecentInterestPanel
 lib/
   ai.ts                       # OpenRouter client + model id
   data.ts                     # JSON loaders
   schemas.ts                  # zod contracts (Profile, Engineer, Team, SearchResult)
-  signals.ts                  # interest-signal read/write helpers (writes outside project tree)
+  signals.ts                  # session-scoped interest-signal helpers (writes outside project tree)
   prompts/                    # profile + search prompts
   profile-pipeline.ts         # shared profile-gen logic (used by seed runner + API route)
   seed-runner.ts              # one-shot: regenerate profiles → data/profiles.json
@@ -91,10 +93,10 @@ docs/
 
 See `docs/DEMO_SCRIPT.md` for the full 3-minute walkthrough, mapped to seeded ids and queries:
 
-1. **Engineer view** — open `/app/profile`, review Rayan's auto-generated profile, toggle "Open to transfer", click Publish.
-2. **Manager view** — search *"fraud detection"* → Rayan ranks top with grounded reasoning → click → his profile.
-3. **Engineer view again** — `/app/teams` → filter Backend → open Fraud Platform → skill gaps overlap Rayan's profile skills → click "Signal interest" → toast confirms.
-4. **Manager view encore** — open `/app/teams/payments-architecture` (Rayan's team) → the just-signaled engineer appears in the **Recent Interest** panel.
+1. **Engineer view** — open `/app/profile`, review Rayan's generated profile, open skill/project detail pages, edit draft preferences, then publish.
+2. **Manager view** — `/app/search` is available only to managers. Search *"fraud detection"* or *"React design systems"*, use Open to transfer / minimum-score filters, click a candidate, and show the Payments Architecture match box on their profile.
+3. **Engineer view again** — `/app/teams` shows Best fit teams, filters, team detail pages, and project detail pages. Signal interest with a coffee-chat or role-interest intent plus a message.
+4. **Manager view encore** — **My team** opens `/app/teams/payments-architecture`, where mission/current projects are editable and the manager can review `/app/interests` with read/star/follow-up workflow.
 
 ## Onboarding for teammates / agents
 

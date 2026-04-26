@@ -3,20 +3,118 @@
     "slug": "fraud-platform",
     "name": "Fraud Platform",
     "mission": "Protect every transaction. We own the real-time fraud-scoring path that gates ~$2M/day in payments across 14 markets — fast enough to add <50ms p99, smart enough to learn from every chargeback, and reliable enough to fail safe when upstream payment processors hiccup.",
-    "techStack": ["TypeScript", "Node.js", "Postgres", "Kafka", "Stripe", "Redis"],
-    "projectTypes": ["Backend", "Reliability", "Payments"],
+    "techStack": [
+      "TypeScript",
+      "Node.js",
+      "Postgres",
+      "Kafka",
+      "Stripe",
+      "Redis"
+    ],
+    "projectTypes": [
+      "Backend",
+      "Reliability",
+      "Payments"
+    ],
     "currentProjects": [
       {
         "title": "Q1 transactions table partitioning",
-        "description": "Partitioning the high-volume transactions table by month to keep query latency flat as data grows. Covers planner-stat refresh cadence and a zero-downtime cutover plan."
+        "description": "Partitioning the high-volume transactions table by month to keep query latency flat as data grows. Covers planner-stat refresh cadence and a zero-downtime cutover plan.",
+        "status": "Implementation",
+        "owner": "Fraud Platform DB rotation",
+        "timeline": "Q1 cutover window",
+        "problem": "The transactions table is growing faster than planner statistics can keep up, which makes fraud-rule lookups unpredictable during peak payment volume.",
+        "approach": [
+          "Partition transactions by month with a compatibility view so application code keeps the same read path.",
+          "Backfill partitions in batches behind read-only verification queries before moving writes.",
+          "Add planner-stat refresh checks and dashboard alerts for partitions with stale estimates."
+        ],
+        "successMetrics": [
+          "p99 fraud lookup latency stays under 85ms during peak volume",
+          "Zero customer-visible downtime during partition cutover",
+          "Rollback path verified in staging and production shadow run"
+        ],
+        "milestones": [
+          "Shadow-create monthly partitions and constraints",
+          "Backfill the last 18 months of transaction history",
+          "Shift writes through compatibility view",
+          "Retire the unpartitioned table after validation"
+        ],
+        "risks": [
+          "Long-running backfill jobs could compete with fraud scoring reads.",
+          "Queries that skip partition keys may regress without index review."
+        ],
+        "collaborators": [
+          "Fraud Platform",
+          "Payments Architecture",
+          "Data Infrastructure"
+        ]
       },
       {
         "title": "Real-time fraud-rule auto-tuning",
-        "description": "Replacing manual rule-threshold tweaks with an offline learner that proposes new thresholds from the last 14 days of chargebacks. Human-in-the-loop approval before deploy."
+        "description": "Replacing manual rule-threshold tweaks with an offline learner that proposes new thresholds from the last 14 days of chargebacks. Human-in-the-loop approval before deploy.",
+        "status": "Discovery",
+        "owner": "Risk systems pod",
+        "timeline": "Prototype this quarter",
+        "problem": "Fraud thresholds are still tuned manually after chargeback review, which delays reaction time and creates inconsistent rule changes across markets.",
+        "approach": [
+          "Build an offline learner that proposes threshold changes from chargeback, approval, and false-positive history.",
+          "Route every proposed change through human approval before production rollout.",
+          "Store rationale, expected lift, and rollback criteria with every rule proposal."
+        ],
+        "successMetrics": [
+          "Reduce manual threshold review time by 40%",
+          "Improve chargeback precision without increasing false positives",
+          "Every auto-tuned rule has an approval trail"
+        ],
+        "milestones": [
+          "Define training dataset and guardrail metrics",
+          "Ship offline proposal generator",
+          "Add approval workflow to risk console",
+          "Run two-market pilot before global rollout"
+        ],
+        "risks": [
+          "Model recommendations may overfit recent chargeback patterns.",
+          "Risk reviewers need enough explanation to trust proposed changes."
+        ],
+        "collaborators": [
+          "Fraud Platform",
+          "Risk Operations",
+          "Data Infrastructure"
+        ]
       },
       {
         "title": "Webhook router consolidation",
-        "description": "Merging three legacy webhook handlers (Stripe, Adyen, in-house) behind one event-bus consumer with idempotency-key replay protection."
+        "description": "Merging three legacy webhook handlers (Stripe, Adyen, in-house) behind one event-bus consumer with idempotency-key replay protection.",
+        "status": "Design review",
+        "owner": "Payments reliability pod",
+        "timeline": "Next two sprints",
+        "problem": "Stripe, Adyen, and in-house webhook handlers all implement retries and idempotency differently, making replay incidents hard to reason about.",
+        "approach": [
+          "Move provider-specific handlers behind one event-bus consumer contract.",
+          "Normalize idempotency keys before events enter downstream payment services.",
+          "Add replay tooling so incident responders can safely reprocess provider events."
+        ],
+        "successMetrics": [
+          "One webhook ingestion path for all providers",
+          "Duplicate charge attempts remain at zero during replay tests",
+          "Incident replay runbook validated by on-call engineers"
+        ],
+        "milestones": [
+          "Document current provider-specific edge cases",
+          "Ship shared event envelope",
+          "Migrate Stripe handler first",
+          "Move Adyen and in-house providers after parity checks"
+        ],
+        "risks": [
+          "Provider-specific retry behavior may leak through the shared abstraction.",
+          "Replay tooling needs strict permissions to avoid unsafe production use."
+        ],
+        "collaborators": [
+          "Fraud Platform",
+          "Payments Architecture",
+          "Ledger"
+        ]
       }
     ],
     "ownedServices": [
@@ -32,22 +130,94 @@
       "Stripe / payment-processor integrations",
       "Zero-downtime cutover playbooks"
     ],
-    "manager": { "name": "Jonas Beyer", "engineerId": "eng-jonas" }
+    "manager": {
+      "name": "Jonas Beyer",
+      "engineerId": "eng-jonas"
+    }
   },
   {
     "slug": "data-infra",
     "name": "Data Infrastructure",
     "mission": "The team that keeps the company's analytics + ML pipelines fed. We move billions of events per day from product systems into the warehouse, run the offline feature store, and operate the model-serving layer the recommendations + risk teams build on.",
-    "techStack": ["Python", "Spark", "Airflow", "Postgres", "Kafka", "Snowflake"],
-    "projectTypes": ["Data infra", "ML platform", "Backend"],
+    "techStack": [
+      "Python",
+      "Spark",
+      "Airflow",
+      "Postgres",
+      "Kafka",
+      "Snowflake"
+    ],
+    "projectTypes": [
+      "Data infra",
+      "ML platform",
+      "Backend"
+    ],
     "currentProjects": [
       {
         "title": "Feature-store v2 migration",
-        "description": "Cutting over from the legacy in-house feature store to a Tecton-style serving layer with point-in-time correctness for training/inference parity."
+        "description": "Cutting over from the legacy in-house feature store to a Tecton-style serving layer with point-in-time correctness for training/inference parity.",
+        "status": "Migration planning",
+        "owner": "ML platform pod",
+        "timeline": "Two-quarter migration",
+        "problem": "The legacy feature store makes it hard to guarantee point-in-time correctness between model training and online inference.",
+        "approach": [
+          "Introduce a versioned feature registry with owners, freshness SLOs, and backfill policy.",
+          "Dual-write high-value features before moving model consumers.",
+          "Add parity checks between offline and online feature values for every migrated feature."
+        ],
+        "successMetrics": [
+          "All tier-1 models read from feature-store v2",
+          "Feature parity checks stay above 99.5%",
+          "No model rollback caused by missing or stale features"
+        ],
+        "milestones": [
+          "Define v2 feature contract",
+          "Migrate fraud and recommendation features first",
+          "Cut online serving traffic by model group",
+          "Deprecate legacy feature registration"
+        ],
+        "risks": [
+          "Dual-write windows can hide silent drift between stores.",
+          "Model teams may need help updating old feature definitions."
+        ],
+        "collaborators": [
+          "Data Infrastructure",
+          "Fraud Platform",
+          "Recommendations"
+        ]
       },
       {
         "title": "LLM eval harness for product surfaces",
-        "description": "A shared offline eval pipeline so every team shipping an LLM feature (search, summarization, fraud explanations) gets calibrated regression scores, not vibes."
+        "description": "A shared offline eval pipeline so every team shipping an LLM feature (search, summarization, fraud explanations) gets calibrated regression scores, not vibes.",
+        "status": "Active build",
+        "owner": "Applied AI enablement",
+        "timeline": "Beta in four weeks",
+        "problem": "Teams shipping LLM features lack a shared regression harness, so quality changes are judged manually and inconsistently.",
+        "approach": [
+          "Create a standard eval dataset format with task, expected behavior, and failure category.",
+          "Run eval suites in CI for prompt and retrieval changes.",
+          "Expose trend dashboards so product teams can see quality movement over time."
+        ],
+        "successMetrics": [
+          "Every LLM feature has at least one regression suite",
+          "Prompt changes show pass-rate deltas before merge",
+          "Teams can inspect failures without reading raw model logs"
+        ],
+        "milestones": [
+          "Ship eval dataset schema",
+          "Add CI runner for one pilot team",
+          "Build failure review UI",
+          "Roll out to search and summarization surfaces"
+        ],
+        "risks": [
+          "Eval datasets may become stale if product behavior changes quickly.",
+          "Over-indexing on pass rate can miss qualitative regressions."
+        ],
+        "collaborators": [
+          "Data Infrastructure",
+          "Search",
+          "Product Engineering"
+        ]
       }
     ],
     "ownedServices": [
@@ -62,22 +232,93 @@
       "Frontend tooling for internal data UIs",
       "Cost-optimization for Spark workloads"
     ],
-    "manager": { "name": "Priya Menon", "engineerId": "eng-priya" }
+    "manager": {
+      "name": "Priya Menon",
+      "engineerId": "eng-priya"
+    }
   },
   {
     "slug": "platform-experience",
     "name": "Platform Experience",
     "mission": "Make the engineering platform feel obvious. We build the internal CLIs, dashboards, and CI scaffolding every other team touches daily — measured on how rarely you have to think about us.",
-    "techStack": ["TypeScript", "React", "Next.js", "Go", "Kubernetes"],
-    "projectTypes": ["Internal tooling", "DX automation", "Frontend"],
+    "techStack": [
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Go",
+      "Kubernetes"
+    ],
+    "projectTypes": [
+      "Internal tooling",
+      "DX automation",
+      "Frontend"
+    ],
     "currentProjects": [
       {
         "title": "Service template generator",
-        "description": "A `og service new` CLI that scaffolds a service with logging, metrics, tracing, CI, and a working /healthz route — wired to the platform's golden defaults."
+        "description": "A `og service new` CLI that scaffolds a service with logging, metrics, tracing, CI, and a working /healthz route — wired to the platform's golden defaults.",
+        "status": "Beta",
+        "owner": "Developer platform",
+        "timeline": "Beta this month",
+        "problem": "New services take too long to start because each team recreates logging, health checks, tracing, and CI setup by hand.",
+        "approach": [
+          "Generate a service skeleton with standard observability, Docker, CI, and ownership metadata.",
+          "Keep templates versioned so teams can safely adopt platform changes later.",
+          "Collect feedback from first services created through the CLI."
+        ],
+        "successMetrics": [
+          "New service scaffold time under 10 minutes",
+          "90% of generated services pass platform checks on first run",
+          "Template upgrade path documented for existing services"
+        ],
+        "milestones": [
+          "Ship TypeScript service template",
+          "Add Go service template",
+          "Integrate ownership metadata with service catalog",
+          "Run feedback sessions with pilot teams"
+        ],
+        "risks": [
+          "Templates can drift from real production needs if platform owners do not maintain them.",
+          "Too many options in the CLI could make the default path less obvious."
+        ],
+        "collaborators": [
+          "Platform Experience",
+          "Service Owners",
+          "SRE"
+        ]
       },
       {
         "title": "Internal portal redesign",
-        "description": "Rewriting the internal developer portal in Next.js with a design-system audit so service catalogs, runbooks, and on-call rotations live in one place."
+        "description": "Rewriting the internal developer portal in Next.js with a design-system audit so service catalogs, runbooks, and on-call rotations live in one place.",
+        "status": "Design polish",
+        "owner": "Developer experience",
+        "timeline": "Launch candidate next sprint",
+        "problem": "Runbooks, service metadata, on-call rotations, and ownership docs are spread across tools, slowing down daily engineering workflows.",
+        "approach": [
+          "Rebuild the portal around service ownership as the primary navigation model.",
+          "Use the product design system so internal tools feel consistent.",
+          "Add search across runbooks, service metadata, and team ownership pages."
+        ],
+        "successMetrics": [
+          "Engineers can find an owned service in under 20 seconds",
+          "Portal search returns a useful result for 70% of pilot queries",
+          "On-call links and runbooks are complete for tier-1 services"
+        ],
+        "milestones": [
+          "Finalize service detail page",
+          "Migrate runbook links",
+          "Add search index",
+          "Run pilot with Platform Experience and Fraud Platform"
+        ],
+        "risks": [
+          "Old metadata may be incomplete or stale during migration.",
+          "Search relevance depends on teams cleaning up ownership records."
+        ],
+        "collaborators": [
+          "Platform Experience",
+          "Design Systems",
+          "SRE"
+        ]
       }
     ],
     "ownedServices": [
@@ -91,22 +332,95 @@
       "Go service templates & golden paths",
       "DX research with engineer customers"
     ],
-    "manager": { "name": "Sahib K.", "engineerId": "eng-sahib" }
+    "manager": {
+      "name": "Sahib K.",
+      "engineerId": "eng-sahib"
+    }
   },
   {
     "slug": "payments-architecture",
     "name": "Payments Architecture",
     "mission": "The cross-team architecture guild for everything that moves money. We own the long-horizon roadmap — multi-region failover, payment-processor abstraction, fraud-pipeline observability — and the RFC process that keeps Fraud Platform, Risk, and Ledger pulling the same direction.",
-    "techStack": ["TypeScript", "Postgres", "Stripe", "Kafka", "Redis", "OpenTelemetry"],
-    "projectTypes": ["Backend", "Architecture", "Payments"],
+    "techStack": [
+      "TypeScript",
+      "Postgres",
+      "Stripe",
+      "Kafka",
+      "Redis",
+      "OpenTelemetry"
+    ],
+    "projectTypes": [
+      "Backend",
+      "Architecture",
+      "Payments"
+    ],
     "currentProjects": [
       {
         "title": "Multi-region payment-router design",
-        "description": "RFC + reference implementation for a region-aware payment router that fails over within 30s of a regional Stripe outage, with deterministic idempotency-key handling across regions so duplicate retries don't re-charge."
+        "description": "RFC + reference implementation for a region-aware payment router that fails over within 30s of a regional Stripe outage, with deterministic idempotency-key handling across regions so duplicate retries don't re-charge.",
+        "status": "RFC review",
+        "owner": "Payments Architecture",
+        "timeline": "RFC approval this month",
+        "problem": "A regional processor outage can still force manual routing decisions, and retries must remain idempotent across failover paths.",
+        "approach": [
+          "Define the region-aware routing contract and processor health model.",
+          "Prototype deterministic idempotency-key handling across regions.",
+          "Run failure drills against sandbox processors before implementation."
+        ],
+        "successMetrics": [
+          "Failover target under 30 seconds in drill conditions",
+          "No duplicate charges during cross-region retry tests",
+          "RFC approved by Fraud, Risk, and Ledger representatives"
+        ],
+        "milestones": [
+          "Publish RFC v1",
+          "Complete idempotency-key prototype",
+          "Run tabletop outage review",
+          "Hand implementation plan to Fraud Platform"
+        ],
+        "risks": [
+          "Processor behavior differs enough to complicate one routing abstraction.",
+          "Failover automation needs clear manual override controls."
+        ],
+        "collaborators": [
+          "Payments Architecture",
+          "Fraud Platform",
+          "Ledger",
+          "Risk"
+        ]
       },
       {
         "title": "Fraud-pipeline observability spec",
-        "description": "Cross-team observability standard for the end-to-end fraud-scoring path: trace-id propagation through webhook → router → rules-engine, p99 latency budgets per hop, and a shared Grafana board owned by this team."
+        "description": "Cross-team observability standard for the end-to-end fraud-scoring path: trace-id propagation through webhook → router → rules-engine, p99 latency budgets per hop, and a shared Grafana board owned by this team.",
+        "status": "In review",
+        "owner": "Payments Architecture",
+        "timeline": "Spec freeze in two weeks",
+        "problem": "Fraud investigations require stitching together logs across webhook routing, fraud rules, transaction APIs, and chargeback ingestion.",
+        "approach": [
+          "Standardize trace-id propagation from webhook receipt through fraud scoring and payment decisions.",
+          "Define p99 latency budgets per hop and publish them in a shared Grafana board.",
+          "Add required fields for fraud decisions so support and risk teams can reconstruct outcomes."
+        ],
+        "successMetrics": [
+          "Every fraud decision has an end-to-end trace id",
+          "Shared dashboard covers all tier-1 fraud services",
+          "Incident triage time drops by 25% in rehearsal"
+        ],
+        "milestones": [
+          "Map current trace gaps",
+          "Publish required telemetry fields",
+          "Build shared Grafana board",
+          "Adopt spec in webhook-router and fraud-rules-engine"
+        ],
+        "risks": [
+          "Some legacy services may need instrumentation work before they can comply.",
+          "Too many required fields could slow adoption."
+        ],
+        "collaborators": [
+          "Payments Architecture",
+          "Fraud Platform",
+          "SRE"
+        ]
       }
     ],
     "ownedServices": [
@@ -122,22 +436,93 @@
       "Zero-downtime cutover playbooks",
       "In-process latency budgeting"
     ],
-    "manager": { "name": "Rayan Castilla", "engineerId": "eng-rayan" }
+    "manager": {
+      "name": "Rayan Castilla",
+      "engineerId": "eng-rayan"
+    }
   },
   {
     "slug": "security-platform",
     "name": "Security Platform",
     "mission": "Make our web surfaces hard to attack and easy to keep that way. We own client-side security posture — strict CSP, supply-chain integrity, auth-cookie hardening — and the frontend security review process that keeps adjacent teams from re-introducing the same classes of bugs.",
-    "techStack": ["TypeScript", "React", "Next.js", "OWASP", "Snyk", "CSP"],
-    "projectTypes": ["Frontend", "Security"],
+    "techStack": [
+      "TypeScript",
+      "React",
+      "Next.js",
+      "OWASP",
+      "Snyk",
+      "CSP"
+    ],
+    "projectTypes": [
+      "Frontend",
+      "Security"
+    ],
     "currentProjects": [
       {
         "title": "Strict CSP rollout — internal admin",
-        "description": "Extending the strict nonce-based CSP from user-facing surfaces to the internal admin tooling. Coordinating with platform-experience on the dev-portal migration and with auth-team on the admin sign-in flow."
+        "description": "Extending the strict nonce-based CSP from user-facing surfaces to the internal admin tooling. Coordinating with platform-experience on the dev-portal migration and with auth-team on the admin sign-in flow.",
+        "status": "Rollout",
+        "owner": "Security Platform",
+        "timeline": "Phased rollout over six weeks",
+        "problem": "Internal admin tooling still permits script patterns that would be blocked on customer-facing surfaces, creating a weaker security posture for privileged workflows.",
+        "approach": [
+          "Move admin pages to nonce-based CSP with a reporting-only warmup period.",
+          "Coordinate with auth and platform teams to replace inline scripts.",
+          "Track violations by owner before switching enforcement on."
+        ],
+        "successMetrics": [
+          "CSP enforcement enabled for admin routes",
+          "No critical admin workflow blocked after rollout",
+          "All inline-script violations assigned to owners"
+        ],
+        "milestones": [
+          "Enable report-only policy",
+          "Replace known inline scripts",
+          "Run admin workflow QA",
+          "Switch enforcement on by route group"
+        ],
+        "risks": [
+          "Third-party widgets may require exceptions that weaken the policy.",
+          "Admin teams need time to fix violations before enforcement."
+        ],
+        "collaborators": [
+          "Security Platform",
+          "Auth",
+          "Platform Experience"
+        ]
       },
       {
         "title": "Third-party-script supply-chain audit",
-        "description": "Quarterly review of every pinned third-party script: SRI hash drift, vendor security posture, CDN ownership. Includes the build-step that auto-emits SRI hashes and the cron that alerts on drift."
+        "description": "Quarterly review of every pinned third-party script: SRI hash drift, vendor security posture, CDN ownership. Includes the build-step that auto-emits SRI hashes and the cron that alerts on drift.",
+        "status": "Quarterly audit",
+        "owner": "Security Platform",
+        "timeline": "Audit closes this month",
+        "problem": "Third-party scripts can change ownership or content over time, and manual review does not catch SRI drift quickly enough.",
+        "approach": [
+          "Inventory every third-party script and map it to a business owner.",
+          "Automate SRI hash generation and drift detection in CI.",
+          "Create a quarterly review checklist for vendor posture and CDN ownership."
+        ],
+        "successMetrics": [
+          "100% of third-party scripts have owners",
+          "SRI drift alerts within one day",
+          "Quarterly audit package ready for security review"
+        ],
+        "milestones": [
+          "Complete script inventory",
+          "Add SRI build step",
+          "Wire drift alerts",
+          "Publish vendor review checklist"
+        ],
+        "risks": [
+          "Some scripts may not support stable SRI workflows.",
+          "Business owners may not know why a script is still needed."
+        ],
+        "collaborators": [
+          "Security Platform",
+          "Growth Platform",
+          "Procurement"
+        ]
       }
     ],
     "ownedServices": [
@@ -152,6 +537,9 @@
       "CSRF token rotation patterns",
       "Cross-team frontend security review"
     ],
-    "manager": { "name": "Tisha P.", "engineerId": "eng-tisha" }
+    "manager": {
+      "name": "Tisha P.",
+      "engineerId": "eng-tisha"
+    }
   }
 ]

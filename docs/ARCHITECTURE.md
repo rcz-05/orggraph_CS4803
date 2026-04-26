@@ -11,8 +11,8 @@
 | Animation | **framer-motion** | Used on landing — keeps motion language consistent. |
 | Icons | **lucide-react** | Same as landing. |
 | Fonts | **Geist** (sans) + **Caveat** (handwritten headings, via `@fontsource/caveat`) | Already loaded on landing; replicate. |
-| AI | **AI SDK v6** through **Vercel AI Gateway** | One env var, multi-model fallback. Use `"anthropic/claude-sonnet-4-6"` for quality, `"anthropic/claude-haiku-4-5"` for cheap/fast. |
-| Storage | **Seeded JSON** in `data/` (no DB) | Demo-only — explicit per PRD. Edits to profile state live in React + optionally write to a `data/_user-edits.json` runtime file. |
+| AI | **AI SDK v6** through **OpenRouter** (`@openrouter/ai-sdk-provider`) | One env var, free-router fallback for local demo. `MODEL_DEFAULT` and `MODEL_FAST` both use `openrouter/free`. |
+| Storage | **Seeded JSON** in `data/` + session-scoped temp JSON for interest signals | Demo-only — explicit per PRD. Profile/team edits live in React state. Interest actions write outside the repo under `os.tmpdir()` with the current process id so server restart resets demo data. |
 | Hosting | **Vercel** (Fluid Compute) | Same account as landing. Default Node 24 runtime, 300s function timeout. |
 | Package manager | **npm** | Lockfile (`package-lock.json`) lives at repo root. Matches the landing repo's tooling. |
 
@@ -22,19 +22,28 @@
 ```
 /                       → Marketing landing (mirror of orggraph_team6_landing or
                           a thin redirect to it — TBD Day 1, see Decision DR-001)
-/app                    → Dashboard hub: tiles for "My profile", "Talent search",
-                          "Team portal" (matches the demo path SCRUM-2)
+/app                    → Role-aware dashboard hub. Engineer: My profile, Teams,
+                          Sent interests. Manager: My team, Talent search,
+                          Teams, Team inbox.
 /app/profile            → Logged-in engineer's own profile (Feature 1 — generate, edit, publish)
 /app/profile/[id]       → View any engineer's profile (used by Feature 2 results)
-/app/search             → Manager talent search (Feature 2)
-/app/teams              → Team list with filters (Feature 3)
-/app/teams/[slug]       → Team detail page (Feature 3)
+/app/profile/[id]/skill/[index]
+                        → Skill detail page with summary/description editing while draft
+/app/profile/[id]/project/[index]
+                        → Profile project-theme detail page
+/app/search             → Manager-only talent search (Feature 2). Engineer role redirects to /app/teams.
+/app/teams              → Team list with filters. Engineer view adds Best fit teams.
+/app/teams/[slug]       → Team detail page. Manager's own team has editable mission/projects.
+/app/teams/[slug]/projects/[index]
+                        → Team project detail page with richer project context; manager's own team can edit project details session-only.
+/app/interests          → Role-aware interest center. Engineer: sent interests. Manager: managed-team inbox.
 /api/profile/generate   → POST — runs LLM over a seeded engineer's artifacts → structured profile JSON
 /api/search             → POST — { query } → ranked candidate matches
-/api/teams/signal       → POST — { teamSlug, engineerId } → no-op success for demo (returns ok:true)
+/api/teams/signal       → POST — { teamSlug, engineerId, intent, message }.
+                          PATCH — read/star/follow-up updates for interest records.
 ```
 
-For the demo we **fake auth** with a session cookie that picks an engineer ID from the seed (default: `eng-rayan`). Add a tiny role switcher in the navbar (`Engineer view ↔ Manager view`) so we can toggle on stage.
+For the demo we **fake auth** with a session cookie that picks an engineer ID from the seed (default: `eng-rayan`). The role switcher (`Engineer view ↔ Manager view`) also handles unsafe route transitions: switching from Manager search to Engineer redirects to `/app/teams`, and switching from Engineer profile to Manager redirects to `/app/teams/payments-architecture`.
 
 ## Folder layout
 ```
@@ -47,10 +56,12 @@ orggraph_CS4803/
 │   │   ├── profile/
 │   │   │   ├── page.tsx          # /app/profile  (own)
 │   │   │   └── [id]/page.tsx     # /app/profile/[id]
-│   │   ├── search/page.tsx
+│   │   ├── interests/page.tsx
+│   │   ├── search/page.tsx           # server role guard; client UI lives in components/search
 │   │   └── teams/
 │   │       ├── page.tsx
-│   │       └── [slug]/page.tsx
+│   │       ├── [slug]/page.tsx
+│   │       └── [slug]/projects/[index]/page.tsx
 │   ├── api/
 │   │   ├── profile/generate/route.ts
 │   │   ├── search/route.ts
@@ -60,9 +71,10 @@ orggraph_CS4803/
 ├── components/
 │   ├── ui/                       # shadcn primitives (button, card, input, badge, separator)
 │   ├── shell/                    # navbar, sidebar, role switcher, topbar
-│   ├── profile/                  # ProfileHeader, SkillBlock, EvidenceCard, EditableSection
-│   ├── search/                   # SearchInput, ResultRow, MatchScoreBadge
-│   ├── teams/                    # TeamCard, TeamFilters, TeamDetail, SignalInterestButton
+│   ├── interests/                # InterestCenter
+│   ├── profile/                  # ProfileView, PreferencesEditor, detail pages, ManagerMatchCard
+│   ├── search/                   # SearchPageClient, ResultRow, MatchScoreBadge
+│   ├── teams/                    # TeamCard, TeamFilters, SignalInterestButton, RecentInterestPanel
 │   └── shared/                   # Eyebrow, CaveatHeading, PostitCard (reuse landing styling)
 ├── lib/
 │   ├── ai.ts                     # gateway client + model id constants
@@ -114,11 +126,14 @@ type Profile = {
   summary: string;                // 2–3 sentence narrative
   skills: Array<{
     name: string;                 // "React", "Fraud detection"
+    summary: string;
+    description: string;
     confidence: "low" | "medium" | "high";
     evidence: string[];           // short snippets pointing to artifacts
   }>;
   projectThemes: Array<{
     title: string;
+    summary: string;
     description: string;
     artifactRefs: string[];       // e.g. "github:pr-1283", "jira:FRAUD-44"
   }>;
@@ -141,6 +156,8 @@ type SearchResult = {
 };
 ```
 
+The manager profile view computes a local Payments Architecture match card from `Profile`, `Engineer.preferences`, and the managed team's stack/projects/skill gaps. It is not an LLM call.
+
 ### Team (Feature 3)
 ```ts
 type Team = {
@@ -149,23 +166,61 @@ type Team = {
   mission: string;
   techStack: string[];            // ["TypeScript", "React", "Postgres", "Kafka"]
   projectTypes: string[];         // ["Backend", "Data infra"]
-  currentProjects: Array<{ title: string; description: string }>;
+  currentProjects: Array<{
+    title: string;
+    description: string;
+    status: string;
+    owner: string;
+    timeline: string;
+    problem: string;
+    approach: string[];
+    successMetrics: string[];
+    milestones: string[];
+    risks: string[];
+    collaborators: string[];
+  }>;
   ownedServices: string[];
   skillGaps: string[];
   manager: { name: string; engineerId: string };
 };
 ```
 
+### Interest signal
+```ts
+type Signal = {
+  id: string;
+  teamSlug: string;
+  engineerId: string;
+  at: string;
+  intent: "coffee-chat" | "role-interest";
+  message: string;
+  read: boolean;
+  starred: boolean;
+  followUps: Array<{
+    at: string;
+    author: "manager" | "engineer";
+    message: string;
+  }>;
+};
+```
+
+Signal data is demo-scoped in `lib/signals.ts`: seed inbox data exists for the Payments Architecture manager view, seed sent-interest data exists for Rayan's engineer view, and runtime writes go to a process-specific temp file. Restarting the dev server resets to seed data.
+
 ## AI calls
 
 ### `lib/ai.ts`
 ```ts
-import { gateway } from 'ai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-export const MODEL_DEFAULT = 'anthropic/claude-sonnet-4-6';
-export const MODEL_FAST    = 'anthropic/claude-haiku-4-5';
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+const FREE_ROUTER = 'openrouter/free';
+
+export const MODEL_DEFAULT = openrouter.chat(FREE_ROUTER);
+export const MODEL_FAST    = openrouter.chat(FREE_ROUTER);
 ```
-Set `AI_GATEWAY_API_KEY` in Vercel project env. Locally, `vercel env pull .env.local`.
+Set `OPENROUTER_API_KEY` in `.env.local`.
 
 ### Profile generation (`/api/profile/generate`)
 - Input: `engineerId` → loads identity + all `data/artifacts/<engineerId>/*` files.
@@ -175,15 +230,17 @@ Set `AI_GATEWAY_API_KEY` in Vercel project env. Locally, `vercel env pull .env.l
 ### Search ranking (`/api/search`)
 - Input: `{ query: string }`.
 - Implementation: load all profiles from `data/profiles.json`; pass them all in a single LLM call (small N — fits easily in context); ask for ranked `SearchResult[]` JSON sorted by `matchScore`.
-- Optional: a quick keyword pre-filter to short-list candidates before the LLM call; not necessary for MVP scale.
+- The prompt intentionally omits no-signal candidates under 30. The UI filters returned results by Open to transfer and minimum score (`All`, `50+`, `70+`, `85+`).
 
 ### Team signal (`/api/teams/signal`)
-- Stub for demo. Just returns `{ ok: true, message: "Manager notified" }` and pushes a row into `data/_signals.json` (gitignored or committed — your call).
+- POST creates an interest signal with `intent` and `message`.
+- PATCH updates read/unread, starred, and follow-up messages.
+- Runtime writes use `os.tmpdir()` with the server process id, not `data/_signals.json`.
 
 ## Performance / latency
 Demo machine, 5s budget per AI call:
-- Profile generation: ~3–6s with Sonnet, ~1–3s with Haiku — **cache the output** so we never run it live.
-- Search: 1–2s with Haiku for ~10 profiles in context.
+- Profile generation: model-dependent; **cache the output** so we never run it live.
+- Search: one OpenRouter free-router structured-output call over the 8 committed profiles.
 
 **Pre-warm and cache**: ship `data/profiles.json` already generated. Live demo only triggers Search and Team signals.
 
@@ -192,5 +249,7 @@ Add one-line entries here when product or architectural decisions are made.
 
 - **DR-001** (TBD Day 1): Marketing landing — mirror in this repo or keep the separate Vercel site? Default: keep separate, `/` redirects to landing repo URL. Owner: Rayan.
 - **DR-002**: Mock data only for MVP. No GitHub/Jira/Slack OAuth. Per PRD §5.
-- **DR-003**: AI Gateway with `"anthropic/claude-sonnet-4-6"` default; Haiku for search ranking to keep latency low.
+- **DR-003**: Local AI calls use OpenRouter's `openrouter/free` through AI SDK v6. `OPENROUTER_API_KEY` is the required env var.
 - **DR-004**: Pre-generate `data/profiles.json` — never call profile generation live during the demo.
+- **DR-005**: Role surfaces are intentionally different. Engineer view hides Talent Search and shows My Profile / Best fit teams / sent interests. Manager view shows Talent Search / My Team / team inbox.
+- **DR-006**: Interest data is process-session scoped in temp storage so demo interactions persist during a run and reset on server restart.

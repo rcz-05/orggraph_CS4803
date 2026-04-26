@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | Team list | `/app/teams` | Card grid + chip filters (tech stack, project type). |
 | Team detail | `/app/teams/[slug]` | Mission, current projects, key tech, owned services, skill gaps, "Signal interest" button. |
-| Signal API | `/api/teams/signal` | POST `{ teamSlug, engineerId }` → returns `{ ok: true, message: "Manager notified" }`. Append to `data/_signals.json` for visual confirmation. |
+| Signal API | `/api/teams/signal` | POST `{ teamSlug, engineerId, intent, message }` → returns `{ ok: true, message: "Manager notified" }`. Runtime state is process-scoped temp JSON outside the repo. PATCH updates read/star/follow-up state. |
 | Team seed | `data/teams.json` | 3 teams (lean toward fewer + richer over many + thin). |
 
 ## Acceptance criteria (from PRD)

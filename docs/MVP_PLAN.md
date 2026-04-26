@@ -19,7 +19,7 @@
 - [ ] (Rayan) Install: `framer-motion lucide-react @base-ui/react clsx tailwind-merge class-variance-authority zod ai`.
 - [x] (Rayan) shadcn primitives ported from landing — `button card input badge separator skeleton`. ✅
 - [ ] (Rayan) Build `components/shell/` (navbar with role switcher) and a stub `/app` dashboard hub with the 4 post-it tiles (link only, no logic).
-- [ ] (Rayan) Wire AI Gateway: add `AI_GATEWAY_API_KEY` env var (Vercel + `.env.local`), create `lib/ai.ts`.
+- [ ] (Rayan) Wire OpenRouter: add `OPENROUTER_API_KEY` env var (`.env.local`), create `lib/ai.ts`.
 - [ ] (Rayan) Seed `data/engineers.json` (8–12 engineers, basic identity + preferences) and `data/teams.json` (3 teams).
 - [ ] (Rayan) Seed `data/artifacts/<engineerId>/` with 3–5 mock files per engineer (one or two engineers fully fleshed out, others lighter).
 - [ ] First commit + push. Branch protections on `main` not necessary for this week.
@@ -37,7 +37,7 @@
 - [ ] **(Sahib) Feature 3 — team portal**
   - `/app/teams` list with chip filters (tech stack, project type) over `data/teams.json`.
   - `/app/teams/[slug]` detail with current projects, key tech, owned services, skill gaps, "Signal interest" button.
-  - `/api/teams/signal` — stub returning `{ ok: true }`, optionally appends to `data/_signals.json`.
+  - `/api/teams/signal` — demo endpoint returning `{ ok: true }`, backed by process-scoped temp JSON outside the repo.
 - [ ] **(Arnav) Feature 2 — search scaffold**
   - `/app/search` page with the input + result list shell (no AI yet).
   - `lib/prompts/search.ts` drafted.
@@ -51,7 +51,7 @@
 **Goal:** Feature 2 fully wired, all three features integrate, polish pass starts.
 
 - [ ] **(Arnav) Feature 2 — finish AI matching**
-  - `/api/search` calls Haiku via AI Gateway with all profiles + the query, returns ranked `SearchResult[]`.
+  - `/api/search` calls OpenRouter via AI SDK with all profiles + the query, returns ranked `SearchResult[]`.
   - Rank UI: skill highlights, transfer-interest badge, click → `/app/profile/[id]` (or inline drawer).
   - Latency check: < 5s on demo machine. If slow, pre-warm or shrink prompt.
 - [ ] **(Rayan) Feature 1 — finish edit/publish**
@@ -65,7 +65,7 @@
   - Loading skeletons on every async surface.
   - Empty states with Caveat micro-copy.
   - Mobile breakpoints don't have to be pixel-perfect — judges use a laptop.
-- [ ] Deploy preview to Vercel. Make sure `AI_GATEWAY_API_KEY` is set on the Vercel project.
+- [ ] Deploy preview to Vercel. Make sure `OPENROUTER_API_KEY` is set on the Vercel project.
 
 **End-of-day:** full demo path runs cleanly on the deployed preview.
 
@@ -83,7 +83,7 @@
 **Goal:** final check, push to production, breathe.
 
 - [ ] Smoke test on **production URL** (not preview). Run the full demo path end-to-end.
-- [ ] Verify AI Gateway env var is set in Production (not just Preview) on Vercel.
+- [ ] Verify OpenRouter env var is set in Production (not just Preview) on Vercel.
 - [ ] Verify `data/profiles.json` is committed and matches what the seeded artifacts would produce.
 - [ ] Capture final screenshots for the README + pitch deck.
 - [ ] Submit / publish whatever the showcase requires.
@@ -127,7 +127,7 @@
 ## Risks & mitigations
 | Risk | Mitigation |
 | --- | --- |
-| AI Gateway slow / down on demo day | Pre-cache `data/profiles.json`. Search uses Haiku for low latency. Have screen-recorded fallback. |
+| OpenRouter slow / down on demo day | Pre-cache `data/profiles.json`. Search uses the compact profile prompt through `openrouter/free`. Have screen-recorded fallback. |
 | Wi-Fi flaky at showcase | Mobile hotspot in equipment checklist. Demo video as fallback. |
 | Scope creep into Phase 2 | CLAUDE.md hard rule: nothing outside PRD §5 Included. |
 | Data feels fake / underwhelming | Seed the artifacts to match real customer interview stories (Microsoft engineer's invisible-work, fraud-system maintainer). The demo *is* the customer-discovery payoff. |

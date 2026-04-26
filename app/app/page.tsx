@@ -1,4 +1,4 @@
-import { User, Search, Layers, Sparkles } from "lucide-react";
+import { Bell, User, Search, Layers, Sparkles } from "lucide-react";
 
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { CaveatHeading } from "@/components/shared/caveat-heading";
@@ -22,23 +22,35 @@ export default async function DashboardHub() {
         </p>
       </header>
 
-      <section className="grid gap-5 md:grid-cols-3">
+      <section
+        className={
+          role === "manager"
+            ? "grid gap-5 md:grid-cols-4"
+            : "grid gap-5 md:grid-cols-3"
+        }
+      >
         <PostitCard
           accent="profile"
-          badge="PROFILES"
-          title="My profile"
-          description="Auto-generated from your real work signals. Edit, publish, and signal your transfer interest."
+          badge={role === "manager" ? "TEAM" : "PROFILES"}
+          title={role === "manager" ? "My team" : "My profile"}
+          description={
+            role === "manager"
+              ? "Open your managed team page, review projects, skill gaps, and recent interest."
+              : "Auto-generated from your real work signals. Edit, publish, and signal your transfer interest."
+          }
           icon={<User className="h-4 w-4" />}
-          href="/app/profile"
+          href={role === "manager" ? "/app/teams/payments-architecture" : "/app/profile"}
         />
-        <PostitCard
-          accent="search"
-          badge="SEARCH"
-          title="Talent search"
-          description='"Who has React experience?" Ranked internal candidates with evidence and transfer interest.'
-          icon={<Search className="h-4 w-4" />}
-          href="/app/search"
-        />
+        {role === "manager" && (
+          <PostitCard
+            accent="search"
+            badge="SEARCH"
+            title="Talent search"
+            description='"Who has React experience?" Ranked internal candidates with evidence and transfer interest.'
+            icon={<Search className="h-4 w-4" />}
+            href="/app/search"
+          />
+        )}
         <PostitCard
           accent="teams"
           badge="TEAMS"
@@ -46,6 +58,18 @@ export default async function DashboardHub() {
           description="Browse internal teams, their tech, current projects, and skill gaps. Signal interest in seconds."
           icon={<Layers className="h-4 w-4" />}
           href="/app/teams"
+        />
+        <PostitCard
+          accent="evidence"
+          badge="INTERESTS"
+          title={role === "manager" ? "Team inbox" : "Sent interests"}
+          description={
+            role === "manager"
+              ? "Review signals sent to the team you manage. Mark read, star, and follow up."
+              : "Track the teams you reached out to and any follow ups."
+          }
+          icon={<Bell className="h-4 w-4" />}
+          href="/app/interests"
         />
       </section>
 

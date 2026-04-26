@@ -7,13 +7,22 @@ import { Eyebrow } from "@/components/shared/eyebrow";
 import { cn } from "@/lib/utils";
 import type { Team } from "@/lib/schemas";
 
-type Props = { teams: Team[] };
+export type TeamFit = {
+  teamSlug: string;
+  score: number;
+  reasons: string[];
+};
+
+type Props = {
+  teams: Team[];
+  bestFits?: TeamFit[];
+};
 
 function uniqueSorted(values: string[]): string[] {
   return Array.from(new Set(values)).sort();
 }
 
-export function TeamFiltersAndList({ teams }: Props) {
+export function TeamFiltersAndList({ teams, bestFits = [] }: Props) {
   const [tech, setTech] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);
 
@@ -35,9 +44,41 @@ export function TeamFiltersAndList({ teams }: Props) {
       }),
     [teams, tech, project]
   );
+  const teamsBySlug = useMemo(
+    () => new Map(teams.map((team) => [team.slug, team])),
+    [teams]
+  );
+  const bestFitTeams = bestFits
+    .map((fit) => {
+      const team = teamsBySlug.get(fit.teamSlug);
+      return team ? { team, fit } : null;
+    })
+    .filter((item): item is { team: Team; fit: TeamFit } => item !== null);
 
   return (
     <div className="flex flex-col gap-8">
+      {bestFitTeams.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <Eyebrow>Best fit teams</Eyebrow>
+            <p className="text-[13px] leading-[1.55] text-[#666]">
+              Highlighted from your profile skills, tech stack, interests, and
+              each team&apos;s current skill gaps.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {bestFitTeams.map(({ team, fit }) => (
+              <TeamCard
+                key={team.slug}
+                team={team}
+                fitScore={fit.score}
+                fitReasons={fit.reasons}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="flex flex-col gap-4 rounded-2xl border border-[#eee] bg-[#fafafa] p-5">
         <FilterRow
           eyebrow="Project type"

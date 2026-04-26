@@ -11,9 +11,15 @@ Tone and emphasis:
   - "high"   — at least two distinct artifacts (different sources or different work items) demonstrate the skill in non-trivial ways.
   - "medium" — one strong artifact, or multiple lightweight signals.
   - "low"    — peripheral mentions, helping others, or single brief reference.
-- Every Skill MUST include short evidence strings (1 sentence each) that point to a specific artifact, ideally referencing a PR number, Jira key, doc name, or Slack thread date.
-- ProjectThemes group related work into 2-4 coherent narratives ("Infrastructure & Backend Systems", "Code Quality & Technical Debt", "Mentorship & Cross-team Support"). Use the artifacts to pick themes that are actually present.
+- Every Skill has TWO text fields in addition to the evidence array:
+  - "summary" — 1 sentence overview of this skill for the profile card. Keep it tight.
+  - "description" — 3-5 sentences for the skill detail page. Explain the depth of this skill, reference specific artifacts, mention measurable outcomes, and why this skill matters in context.
+- Every Skill MUST also include short evidence strings (1 sentence each) that point to a specific artifact, ideally referencing a PR number, Jira key, doc name, or Slack thread date.
+- ProjectThemes group related work into 2-4 coherent narratives ("Infrastructure & Backend Systems", "Code Quality & Technical Debt", "Mentorship & Cross-team Support"). Use the artifacts to pick themes that are actually present. Each theme has TWO text fields:
+  - "summary" — 1 sentence, used on the profile overview card. Keep it tight.
+  - "description" — 3-6 sentences, used on a dedicated detail page. Include specific artifact references (PR numbers, Jira keys), measurable outcomes (latency reduction, cost savings, adoption counts), the approach taken, and why the work mattered.
 - ContributionEvidence is a flat list of the most demo-worthy individual artifacts (up to ~6). Each has type ("github" | "jira" | "slack" | "doc"), a concise 1-sentence summary, and an optional URL/ref.
+- techStack is a flat array of specific technology names (languages, frameworks, databases, tools) the engineer has demonstrably used in their artifacts — e.g. ["TypeScript", "React", "Postgres", "Kafka", "Node.js"]. Only include technologies explicitly evidenced in the artifacts; do not guess from the team's stack. Order from most-evidenced to least.
 - Summary is 2-3 sentences, plain language, focused on what the engineer is known for and what the work demonstrates. Do not list job titles or years of experience.
 
 Output MUST conform to the Profile schema you've been bound to. Do not add fields. Do not omit required fields.

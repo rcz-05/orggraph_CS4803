@@ -5,7 +5,15 @@ import type { Team } from "@/lib/schemas";
 
 const VISIBLE_TECH = 4;
 
-export function TeamCard({ team }: { team: Team }) {
+export function TeamCard({
+  team,
+  fitScore,
+  fitReasons = [],
+}: {
+  team: Team;
+  fitScore?: number;
+  fitReasons?: string[];
+}) {
   const visible = team.techStack.slice(0, VISIBLE_TECH);
   const overflow = team.techStack.length - visible.length;
 
@@ -19,10 +27,10 @@ export function TeamCard({ team }: { team: Team }) {
     >
       <div className="flex items-center justify-between">
         <span className="rounded-full bg-[#b5c5d6] px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] text-[#3a566e]">
-          TEAM
+          {fitScore ? "BEST FIT" : "TEAM"}
         </span>
         <span className="text-[11px] text-[#3a566e]/70">
-          {team.ownedServices.length} services
+          {fitScore ? `${fitScore}% fit` : `${team.ownedServices.length} services`}
         </span>
       </div>
       <h3
@@ -49,6 +57,19 @@ export function TeamCard({ team }: { team: Team }) {
           </span>
         )}
       </div>
+      {fitReasons.length > 0 && (
+        <ul className="mt-1 flex flex-col gap-1.5 border-t border-[#b5c5d6]/40 pt-3">
+          {fitReasons.slice(0, 2).map((reason) => (
+            <li
+              key={reason}
+              className="flex gap-2 text-[11px] leading-[1.45] text-[#3a566e]"
+            >
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#3a566e]" />
+              {reason}
+            </li>
+          ))}
+        </ul>
+      )}
     </Link>
   );
 }

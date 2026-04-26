@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { CaveatHeading } from "@/components/shared/caveat-heading";
+import { EditableText } from "@/components/profile/editable-text";
 import { SignalInterestButton } from "@/components/teams/signal-interest-button";
 import { RecentInterestPanel } from "@/components/teams/recent-interest-panel";
 import { getEngineers, getTeamBySlug } from "@/lib/data";
-import { getCurrentEngineerId, getRole } from "@/lib/session-server";
+import { getRole } from "@/lib/session-server";
+import { DEMO_ENGINEER_ID, DEMO_MANAGER_TEAM_SLUG } from "@/lib/signals";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +24,12 @@ export default async function TeamDetailPage({
   const team = await getTeamBySlug(slug);
   if (!team) notFound();
 
-  const [engineerId, role, engineers] = await Promise.all([
-    getCurrentEngineerId(),
+  const [role, engineers] = await Promise.all([
     getRole(),
     getEngineers(),
   ]);
   const engineerLookup = new Map(engineers.map((e) => [e.id, e]));
+  const canEditTeam = role === "manager" && team.slug === DEMO_MANAGER_TEAM_SLUG;
 
   return (
     <div className="flex flex-col gap-10 py-4">
@@ -59,25 +61,82 @@ export default async function TeamDetailPage({
         <div className="flex flex-col gap-10">
           <section className="flex flex-col gap-3">
             <Eyebrow>Mission</Eyebrow>
-            <p className="text-[15px] leading-[1.65] text-[#0a0a0a]">
-              {team.mission}
-            </p>
+            {canEditTeam ? (
+              <EditableText
+                initial={team.mission}
+                label="team mission"
+                multiline
+                textClassName="text-[15px] leading-[1.65] text-[#0a0a0a]"
+              />
+            ) : (
+              <p className="text-[15px] leading-[1.65] text-[#0a0a0a]">
+                {team.mission}
+              </p>
+            )}
           </section>
 
           <section className="flex flex-col gap-4">
-            <Eyebrow>Current projects</Eyebrow>
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <Eyebrow>Current projects</Eyebrow>
+              {canEditTeam && (
+                <span className="text-[11px] text-[#999]">
+                  Editable · session only
+                </span>
+              )}
+            </div>
             <ul className="flex flex-col gap-3">
               {team.currentProjects.map((p, i) => (
                 <li
                   key={`${p.title}-${i}`}
-                  className="rounded-2xl border border-[#eee] bg-white p-5"
+                  className="rounded-2xl border border-[#eee] bg-white transition-all hover:border-[#b5c5d6] hover:shadow-md"
                 >
-                  <h3 className="text-[14px] font-semibold text-[#0a0a0a]">
-                    {p.title}
-                  </h3>
-                  <p className="mt-2 text-[13px] leading-[1.55] text-[#666]">
-                    {p.description}
-                  </p>
+                  {canEditTeam ? (
+                    <div className="flex flex-col gap-4 p-5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <EditableText
+                          initial={p.title}
+                          label="project title"
+                          textClassName="text-[14px] font-semibold text-[#0a0a0a] pr-16"
+                        />
+                        <span className="rounded-full bg-[#dce4ef] px-2 py-0.5 text-[10px] font-bold tracking-[0.1em] text-[#3a566e] uppercase">
+                          {p.status}
+                        </span>
+                      </div>
+                      <EditableText
+                        initial={p.description}
+                        label="project description"
+                        multiline
+                        textClassName="text-[13px] leading-[1.55] text-[#666] pr-16"
+                      />
+                      <Link
+                        href={`/app/teams/${team.slug}/projects/${i}`}
+                        className="inline-flex w-fit items-center gap-1.5 text-[12px] font-medium text-[#3a566e] underline-offset-2 hover:underline"
+                      >
+                        View project details
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/app/teams/${team.slug}/projects/${i}`}
+                      className="group flex items-start justify-between gap-4 p-5"
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-[14px] font-semibold text-[#0a0a0a]">
+                            {p.title}
+                          </h3>
+                          <span className="rounded-full bg-[#dce4ef] px-2 py-0.5 text-[10px] font-bold tracking-[0.1em] text-[#3a566e] uppercase">
+                            {p.status}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-[13px] leading-[1.55] text-[#666]">
+                          {p.description}
+                        </p>
+                      </div>
+                      <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#bbb] transition-transform group-hover:translate-x-0.5 group-hover:text-[#3a566e]" />
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -133,7 +192,7 @@ export default async function TeamDetailPage({
           ) : (
             <SignalInterestButton
               teamSlug={team.slug}
-              engineerId={engineerId}
+              engineerId={DEMO_ENGINEER_ID}
               teamName={team.name}
             />
           )}

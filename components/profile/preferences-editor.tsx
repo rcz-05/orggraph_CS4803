@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Lock, Pencil, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,54 +20,114 @@ export function PreferencesEditor({ initial, initialPublished }: Props) {
   const [interests, setInterests] = useState(initial.interests.join(", "));
   const [growthGoals, setGrowthGoals] = useState(initial.growthGoals.join(", "));
   const [published, setPublished] = useState(initialPublished);
-  const [savedFlash, setSavedFlash] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draftOpenToTransfer, setDraftOpenToTransfer] = useState(
+    initial.openToTransfer
+  );
+  const [draftInterests, setDraftInterests] = useState(
+    initial.interests.join(", ")
+  );
+  const [draftGrowthGoals, setDraftGrowthGoals] = useState(
+    initial.growthGoals.join(", ")
+  );
 
-  function flashSaved() {
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 1500);
+  const hasChanges =
+    draftOpenToTransfer !== openToTransfer ||
+    draftInterests !== interests ||
+    draftGrowthGoals !== growthGoals;
+
+  function resetDraft() {
+    setDraftOpenToTransfer(openToTransfer);
+    setDraftInterests(interests);
+    setDraftGrowthGoals(growthGoals);
+  }
+
+  function startEditing() {
+    resetDraft();
+    setEditing(true);
+  }
+
+  function saveDraft() {
+    setOpenToTransfer(draftOpenToTransfer);
+    setInterests(draftInterests);
+    setGrowthGoals(draftGrowthGoals);
+    setEditing(false);
+  }
+
+  function cancelDraft() {
+    resetDraft();
+    setEditing(false);
+  }
+
+  function updatePublished(nextPublished: boolean) {
+    setPublished(nextPublished);
+    window.dispatchEvent(
+      new CustomEvent("profile-published-change", {
+        detail: { published: nextPublished },
+      })
+    );
   }
 
   return (
     <section className="flex flex-col gap-5 rounded-2xl border border-[#eee] bg-[#fafafa] p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <Eyebrow>Preferences · editable</Eyebrow>
+          <Eyebrow>
+            Preferences · {published ? "published" : editing ? "editing" : "draft"}
+          </Eyebrow>
           <CaveatHeading as="h3">Where you want to grow.</CaveatHeading>
         </div>
         <div className="flex items-center gap-2">
-          {savedFlash && (
-            <span className="text-[12px] text-[#3d6132]">Saved · session only</span>
-          )}
           <Badge variant={published ? "default" : "outline"}>
             {published ? "Published" : "Draft"}
           </Badge>
         </div>
       </div>
 
-      <label className="flex cursor-pointer items-center gap-3 text-[14px]">
+      {published && (
+        <div className="flex items-center gap-2 rounded-xl border border-[#e5e5e5] bg-white px-4 py-3 text-[13px] text-[#666]">
+          <Lock className="h-4 w-4 text-[#999]" />
+          Published profiles are locked. Unpublish before making preference changes.
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <span className="text-[12px] font-medium text-[#666]">
+          Internal transfer visibility
+        </span>
         <button
           type="button"
-          onClick={() => {
-            setOpenToTransfer((v) => !v);
-            flashSaved();
-          }}
+          onClick={() => setDraftOpenToTransfer((v) => !v)}
+          disabled={!editing || published}
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-md border transition-colors",
-            openToTransfer
-              ? "border-[#3d6132] bg-[#b8cdb0] text-[#3d6132]"
-              : "border-[#ccc] bg-white"
+            "inline-flex w-fit items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-70",
+            (editing ? draftOpenToTransfer : openToTransfer)
+              ? "border-[#b8cdb0] bg-[#e2edd9] text-[#3d6132]"
+              : "border-[#e5e5e5] bg-white text-[#666]"
           )}
-          aria-pressed={openToTransfer}
+          aria-pressed={editing ? draftOpenToTransfer : openToTransfer}
         >
-          {openToTransfer && <Check className="h-3.5 w-3.5" />}
-        </button>
-        <span>
-          <span className="font-semibold">Open to internal transfer.</span>{" "}
-          <span className="text-[#666]">
-            Surfaces a sage pill on your profile and in search results.
+          <span
+            className={cn(
+              "flex h-4 w-4 items-center justify-center rounded-full border transition-colors",
+              (editing ? draftOpenToTransfer : openToTransfer)
+                ? "border-[#3d6132] bg-[#b8cdb0]"
+                : "border-[#ccc] bg-[#f5f5f5]"
+            )}
+          >
+            {(editing ? draftOpenToTransfer : openToTransfer) && (
+              <Check className="h-3 w-3 text-[#3d6132]" />
+            )}
           </span>
-        </span>
-      </label>
+          {(editing ? draftOpenToTransfer : openToTransfer)
+            ? "Open to internal transfer"
+            : "Not open to transfer"}
+        </button>
+        <p className="text-[12px] leading-[1.5] text-[#777]">
+          When enabled, this surfaces a sage pill on your profile and in search
+          results.
+        </p>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
@@ -76,11 +136,11 @@ export function PreferencesEditor({ initial, initialPublished }: Props) {
           </label>
           <input
             id="interests"
-            value={interests}
-            onChange={(e) => setInterests(e.target.value)}
-            onBlur={flashSaved}
+            value={editing ? draftInterests : interests}
+            onChange={(e) => setDraftInterests(e.target.value)}
+            disabled={!editing || published}
             placeholder="AI infra, fraud systems"
-            className="rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] focus:border-[#9e4433] focus:outline-none"
+            className="rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] focus:border-[#9e4433] focus:outline-none disabled:bg-[#f5f5f5] disabled:text-[#777]"
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -89,24 +149,54 @@ export function PreferencesEditor({ initial, initialPublished }: Props) {
           </label>
           <input
             id="growth"
-            value={growthGoals}
-            onChange={(e) => setGrowthGoals(e.target.value)}
-            onBlur={flashSaved}
+            value={editing ? draftGrowthGoals : growthGoals}
+            onChange={(e) => setDraftGrowthGoals(e.target.value)}
+            disabled={!editing || published}
             placeholder="Tech lead, cross-team architecture"
-            className="rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] focus:border-[#9e4433] focus:outline-none"
+            className="rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] focus:border-[#9e4433] focus:outline-none disabled:bg-[#f5f5f5] disabled:text-[#777]"
           />
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button
-          onClick={() => setPublished((p) => !p)}
-          variant={published ? "outline" : "default"}
-        >
-          {published ? "Unpublish" : "Publish profile"}
-        </Button>
+        {editing ? (
+          <>
+            <Button onClick={saveDraft} disabled={!hasChanges}>
+              <Check className="h-4 w-4" />
+              Save changes
+            </Button>
+            <Button onClick={cancelDraft} variant="outline">
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <>
+            {!published && (
+              <Button onClick={startEditing} variant="outline">
+                <Pencil className="h-4 w-4" />
+                Edit preferences
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                if (published) {
+                  updatePublished(false);
+                  startEditing();
+                } else {
+                  updatePublished(true);
+                  setEditing(false);
+                  resetDraft();
+                }
+              }}
+              variant={published ? "outline" : "default"}
+            >
+              {published ? "Unpublish to edit" : "Publish profile"}
+            </Button>
+          </>
+        )}
         <p className="text-[11px] text-[#999]">
-          Edits live in this session only — per CLAUDE.md, no persistence layer for the MVP.
+          Preference edits live in this session only for the MVP.
         </p>
       </div>
     </section>

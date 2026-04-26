@@ -5,14 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Props = { teamSlug: string; engineerId: string; teamName: string };
+type Intent = "coffee-chat" | "role-interest";
 
 export function SignalInterestButton({ teamSlug, engineerId, teamName }: Props) {
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [intent, setIntent] = useState<Intent>("coffee-chat");
+  const [message, setMessage] = useState("");
 
   async function signal() {
     setPending(true);
@@ -21,7 +25,7 @@ export function SignalInterestButton({ teamSlug, engineerId, teamName }: Props) 
       const res = await fetch("/api/teams/signal", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ teamSlug, engineerId }),
+        body: JSON.stringify({ teamSlug, engineerId, intent, message }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -38,7 +42,56 @@ export function SignalInterestButton({ teamSlug, engineerId, teamName }: Props) 
   }
 
   return (
-    <div className="relative flex flex-col gap-2">
+    <div className="relative flex flex-col gap-3 rounded-2xl border border-[#eee] bg-white p-5">
+      <div className="flex flex-col gap-2">
+        <span className="text-[12px] font-medium text-[#666]">
+          What kind of interest is this?
+        </span>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[
+            ["coffee-chat", "Coffee chat"],
+            ["role-interest", "Interested in a role"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setIntent(value as Intent)}
+              disabled={pending || done}
+              className={cn(
+                "rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-70",
+                intent === value
+                  ? "border-[#3a566e] bg-[#dce4ef] text-[#3a566e]"
+                  : "border-[#e5e5e5] bg-[#fafafa] text-[#666]"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor={`signal-message-${teamSlug}`}
+          className="text-[12px] font-medium text-[#666]"
+        >
+          Message to manager
+        </label>
+        <textarea
+          id={`signal-message-${teamSlug}`}
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          disabled={pending || done}
+          rows={4}
+          placeholder={
+            intent === "coffee-chat"
+              ? "I would love a short coffee chat to learn more about the team."
+              : "I am interested in future roles on this team because..."
+          }
+          className="w-full resize-none rounded-xl border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] leading-[1.55] focus:border-[#3a566e] focus:outline-none disabled:bg-[#f5f5f5] disabled:text-[#777]"
+        />
+      </div>
+
       <Button
         onClick={signal}
         disabled={pending || done}

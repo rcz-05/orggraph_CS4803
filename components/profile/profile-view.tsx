@@ -1,9 +1,11 @@
-import { GitPullRequest, Briefcase, MessageSquare, FileText } from "lucide-react";
+import Link from "next/link";
+import { GitPullRequest, Briefcase, MessageSquare, FileText, ChevronRight } from "lucide-react";
 
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { CaveatHeading } from "@/components/shared/caveat-heading";
 import { PostitCard } from "@/components/shared/postit-card";
 import { Badge } from "@/components/ui/badge";
+import { ProfileStatusBadge } from "@/components/profile/profile-status-badge";
 import { cn } from "@/lib/utils";
 import type { Engineer, Profile } from "@/lib/schemas";
 
@@ -63,9 +65,7 @@ export function ProfileView({ engineer, profile }: Props) {
           {engineer.preferences.openToTransfer && (
             <Badge variant="evidence">Open to transfer</Badge>
           )}
-          <Badge variant={profile.published ? "default" : "outline"}>
-            {profile.published ? "Published" : "Draft"}
-          </Badge>
+          <ProfileStatusBadge initialPublished={profile.published} />
         </div>
         <p className="text-[13px] text-[#666]">
           {engineer.title} · {engineer.team} · {engineer.yearsAtCompany} year
@@ -79,6 +79,22 @@ export function ProfileView({ engineer, profile }: Props) {
           {profile.summary}
         </p>
       </section>
+
+      {profile.techStack.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <CaveatHeading as="h2">Tech Stack</CaveatHeading>
+          <div className="flex flex-wrap gap-2">
+            {profile.techStack.map((tech) => (
+              <span
+                key={tech}
+                className="inline-flex items-center rounded-full bg-[#e2edd9] px-3.5 py-1.5 text-[13px] font-medium text-[#3d6132] ring-1 ring-[#b8cdb0]"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="flex flex-col gap-6">
         <CaveatHeading as="h2">Skills</CaveatHeading>
@@ -94,27 +110,33 @@ export function ProfileView({ engineer, profile }: Props) {
               </span>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              {skills.map((s) => (
-                <div
-                  key={s.name}
-                  className={cn(
-                    "rounded-xl p-4 ring-1",
-                    CONFIDENCE_TONE[confidence].chip
-                  )}
-                >
-                  <p className="text-[14px] font-semibold">{s.name}</p>
-                  {s.evidence.length > 0 && (
-                    <ul className="mt-2 flex flex-col gap-1.5 text-[12px] leading-[1.5] text-[#444]">
-                      {s.evidence.map((e, i) => (
-                        <li key={i} className="flex gap-2">
-                          <span className="text-[#bbb]">·</span>
-                          <span>{e}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
+              {skills.map((s) => {
+                const flatIndex = profile.skills.indexOf(s);
+                return (
+                  <Link
+                    key={s.name}
+                    href={`/app/profile/${engineer.id}/skill/${flatIndex}`}
+                    className="block"
+                  >
+                    <div
+                      className={cn(
+                        "rounded-xl p-4 ring-1 transition-all hover:shadow-md",
+                        CONFIDENCE_TONE[confidence].chip
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-[14px] font-semibold">{s.name}</p>
+                        <ChevronRight className="h-3.5 w-3.5 opacity-40" />
+                      </div>
+                      {s.summary && (
+                        <p className="mt-1.5 text-[12px] leading-[1.5] text-[#444]">
+                          {s.summary}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         ))}
@@ -129,7 +151,8 @@ export function ProfileView({ engineer, profile }: Props) {
               accent="profile"
               badge="THEME"
               title={theme.title}
-              description={theme.description}
+              description={theme.summary}
+              href={`/app/profile/${engineer.id}/project/${i}`}
             >
               {theme.artifactRefs.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-1.5">
