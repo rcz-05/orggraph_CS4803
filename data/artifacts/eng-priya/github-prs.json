@@ -1,0 +1,28 @@
+[
+  {
+    "id": "github:pr-4072",
+    "repo": "ml-platform/recsys",
+    "number": 4072,
+    "title": "Replace embedding-store with pgvector + HNSW; cut nearest-neighbor p99 by 12x",
+    "state": "merged",
+    "author": "priya",
+    "merged_at": "2025-12-11T14:30:00Z",
+    "files_changed": 28,
+    "additions": 1488,
+    "deletions": 612,
+    "description": "Migrates the recsys embedding store from a bespoke Faiss-on-disk shard layout to pgvector with HNSW indexes. Simplifies operational footprint significantly (we run Postgres anyway) and gives us transactional consistency on embedding updates. p99 nearest-neighbor query: 480ms → 38ms. Index build time fits in the existing nightly window."
+  },
+  {
+    "id": "github:pr-4159",
+    "repo": "ml-platform/eval-harness",
+    "number": 4159,
+    "title": "Internal LLM eval harness: deterministic scoring across providers",
+    "state": "merged",
+    "author": "priya",
+    "merged_at": "2026-02-08T16:45:00Z",
+    "files_changed": 22,
+    "additions": 1107,
+    "deletions": 84,
+    "description": "Internal eval harness that runs a fixed test battery (RAG accuracy, instruction-following, refusal-calibration) against any model exposed by the AI Gateway. Outputs side-by-side JSON reports with statistical significance bands. Used internally to make the Sonnet vs. Haiku tradeoff explicit before swapping a feature's model."
+  }
+]

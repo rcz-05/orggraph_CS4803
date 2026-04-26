@@ -1,0 +1,809 @@
+[
+  {
+    "engineerId": "eng-rayan",
+    "generatedAt": "2026-04-26T07:10:45.427Z",
+    "published": false,
+    "summary": "Rayan is known for safely migrating and operating high-volume payments and fraud infrastructure (zero-downtime Stripe migration, strict p99 targets, and Q4 holiday resilience) while writing the alignment artifacts and runbooks that make large cross-team changes possible. Their work emphasizes operational safety (idempotency, performance tuning, migrations), clear documentation, and mentorship through thorough reviews and pairing, with a track record of stepping in to unblock cross-team deliverables.",
+    "skills": [
+      {
+        "name": "Distributed systems migration and reliability",
+        "confidence": "high",
+        "evidence": [
+          "PR #1283 — Led zero-downtime Stripe Payment Intents migration with dual-write and shadow-compare for $2M/day traffic across 14 markets.",
+          "FRAUD-44 — Owned Q4 holiday reliability for fraud-scoring system; 0 P1s, 1 P2 resolved in 22 min, and no customer-visible outages."
+        ]
+      },
+      {
+        "name": "Database performance and schema evolution",
+        "confidence": "high",
+        "evidence": [
+          "PR #1340 — Reduced fraud-rules query latency 40% at p99 via composite indexes, targeted ANALYZE cadence, and removal of write-heavy triggers.",
+          "FRAUD-127 — Planned monthly partitioning to bound index size and keep hot read paths fast."
+        ]
+      },
+      {
+        "name": "Technical writing and design alignment",
+        "confidence": "high",
+        "evidence": [
+          "RFC 0011 and RFC 0014 — Authored alignment artifacts for Stripe migration and idempotency design used across Risk, Ledger, SRE, and Fraud Platform.",
+          "docs/api/fraud-scoring.md and docs/runbooks/fraud-scoring-incident.md — Primary author/co-author of canonical API docs and on-call runbooks."
+        ]
+      },
+      {
+        "name": "Internal developer tooling and portals",
+        "confidence": "medium",
+        "evidence": [
+          "DEVPORTAL-22 — Added Fraud Platform services to internal Developer Portal, improving discoverability of owners and dependencies.",
+          "github:pr-1456 — Integrated service catalog into portal to reduce incident triage time."
+        ]
+      },
+      {
+        "name": "Code review depth and mentorship",
+        "confidence": "high",
+        "evidence": [
+          "github:review-2089, github:review-1322, github:review-1389 — Provided detailed review feedback and pairing to address race conditions, error-handling, and migration safety.",
+          "slack-threads.md — Repeated mentoring interactions, including cold-start troubleshooting for teammates and design walkthroughs for newer contributors."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Payments & Fraud Platform Reliability",
+        "description": "High-volume payments and fraud infrastructure with strict performance and reliability requirements (p99 targets, zero-downtime migrations, holiday resilience).",
+        "artifactRefs": [
+          "github:pr-1283",
+          "github:pr-1340",
+          "jira:FRAUD-44"
+        ]
+      },
+      {
+        "title": "Operational Safety & Developer Experience",
+        "description": "Built safety mechanisms (idempotency, runbooks, API contracts) that reduce operational risk and improve integration experience for other teams.",
+        "artifactRefs": [
+          "github:pr-1401",
+          "docs/rfcs/0014-idempotency.md",
+          "docs/api/fraud-scoring.md"
+        ]
+      },
+      {
+        "title": "Mentorship & Cross-team Support",
+        "description": "Mentorship and cross-team support: thorough code reviews, pairing on migrations, and internal portal work that makes ownership and dependencies discoverable.",
+        "artifactRefs": [
+          "github:pr-1456",
+          "github:review-2089",
+          "github:review-1322",
+          "github:review-1389",
+          "jira:DEVPORTAL-22"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #1283 — Led zero-downtime migration of legacy payment processor to Stripe Payment Intents for $2M/day across 14 markets with dual-write, shadow-compare, and feature-flagged rollback.",
+        "url": "github:pr-1283"
+      },
+      {
+        "type": "jira",
+        "summary": "FRAUD-44 — Owned end-to-end reliability of the fraud-scoring system through Q4 holiday peak; 0 P1s, 1 P2 (resolved in 22 min), and zero customer-visible outages.",
+        "url": "jira:FRAUD-44"
+      },
+      {
+        "type": "doc",
+        "summary": "RFC 0011 — Authored migration plan and alignment artifact used by Risk, Ledger, SRE, and Fraud Platform to coordinate the Stripe Payment Intents migration.",
+        "url": "docs/rfcs/0011-stripe-migration.md"
+      },
+      {
+        "type": "github",
+        "summary": "PR #1340 — Reduced fraud-rules query latency 40% at p99 via composite indexes, targeted ANALYZE cadence, and removal of a write-heavy unused trigger.",
+        "url": "github:pr-1340"
+      },
+      {
+        "type": "github",
+        "summary": "Multiple GitHub reviews (PRs 1267, 1322, 489, 1389) — Provided targeted feedback on correctness, performance impact, and migration safety while mentoring newer contributors.",
+        "url": "github:review-2089"
+      },
+      {
+        "type": "jira",
+        "summary": "DEVPORTAL-22 — Cross-team contribution to surface Fraud Platform services in the internal Developer Portal, unblocking Q1 launch and reducing incident triage time.",
+        "url": "jira:DEVPORTAL-22"
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-tisha",
+    "generatedAt": "2026-04-26T07:42:28.549Z",
+    "published": false,
+    "summary": "Tisha is a frontend platform engineer who demonstrates strong evidence of modernizing UI architecture (React Server Components, design tokens) and raising security baselines across web surfaces (strict CSP, SRI, cookie hardening, XSS audits). She also takes cross-team ownership, performing database migrations and coordinating security reviews while producing runbooks and mentoring peers on safe patterns.",
+    "skills": [
+      {
+        "name": "Frontend Architecture (React, Server Components, streaming)",
+        "confidence": "high",
+        "evidence": [
+          "PR #2104 — Delivered React Server Components migration with streaming and measured TTI improvement without breaking consumer APIs.",
+          "PR #2178 — Extended shared design tokens and achieved dark-mode parity for 18 components via token-driven theming."
+        ]
+      },
+      {
+        "name": "Web Security (CSP, SRI, XSS mitigation)",
+        "confidence": "high",
+        "evidence": [
+          "PR #2245 — Implemented strict CSP with nonce-based allowlists, per-request nonce context, and a three-phase rollout with telemetry dashboards.",
+          "PR #2261 — Added Subresource Integrity hashes for 11 third-party scripts and automated weekly hash-drift detection."
+        ]
+      },
+      {
+        "name": "Authentication & Authorization hardening",
+        "confidence": "high",
+        "evidence": [
+          "PR #2289 — Hardened auth cookie attributes (__Host- prefix, SameSite) and implemented CSRF token rotation with a 30s grace window.",
+          "JIRA SEC-201 — Owned Q1 frontend XSS audit across 47 surfaces, fixed 6 risky patterns, and published a regression checklist."
+        ]
+      },
+      {
+        "name": "Database Migrations & Schema design",
+        "confidence": "medium",
+        "evidence": [
+          "PR #1389 — Performed cross-team schema migration (payments/fraud platform) with online pg_repack in coordination with another engineer."
+        ]
+      },
+      {
+        "name": "Technical writing & mentorship (security runbooks, reviews)",
+        "confidence": "medium",
+        "evidence": [
+          "Slack #sec-review (2026-03-25) — Coordinated cross-team security reviews, wrote runbooks, and provided direct pairing/mentorship on refactors and CSP adoption."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Frontend Modernization & Design Systems",
+        "description": "Frontend platform modernization and design system consistency: migrating a legacy experiments dashboard to React Server Components (streaming) and expanding token-driven dark-mode parity across funnel components.",
+        "artifactRefs": [
+          "github:pr-2104",
+          "github:pr-2178"
+        ]
+      },
+      {
+        "title": "Security Hardening & Trust",
+        "description": "Security hardening and platform safety: strict CSP with nonce-based allowlists, Subresource Integrity for third-party scripts, cookie attribute hardening, CSRF token rotation, and end-to-end XSS audits that close pen-test findings.",
+        "artifactRefs": [
+          "github:pr-2245",
+          "github:pr-2261",
+          "github:pr-2289",
+          "jira:SEC-201",
+          "jira:SEC-218",
+          "jira:AUTH-94"
+        ]
+      },
+      {
+        "title": "Cross-team Support & Technical Leadership",
+        "description": "Cross-team ownership and mentorship: schema migration support for payments/fraud, security review coordination across multiple teams, runbooks, and direct pairing/mentorship on secure patterns.",
+        "artifactRefs": [
+          "github:pr-1389",
+          "slack-threads.md"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "github: Migrates growth-experiments client to React Server Components + streaming; reduces dashboard TTI 2.4s → 0.9s (cold P75) without breaking consumer APIs.",
+        "url": "https://github.com/growth/web-platform/pull/2104"
+      },
+      {
+        "type": "github",
+        "summary": "github: Delivers strict CSP rollout with nonce-based allowlist, per-request nonce context, and a three-phase enforcement strategy; eliminates inline-script XSS vectors across 5 web surfaces.",
+        "url": "https://github.com/growth/web-platform/pull/2245"
+      },
+      {
+        "type": "github",
+        "summary": "github: Adds Subresource Integrity (SRI) hashes to all third-party script loads and a weekly hash-drift cron to detect CDN changes without runtime cost.",
+        "url": "https://github.com/growth/web-platform/pull/2261"
+      },
+      {
+        "type": "jira",
+        "summary": "jira: Owns end-to-end Q1 frontend XSS audit across 47 user-input surfaces; fixes 6 risky patterns and publishes a regression checklist.",
+        "url": "SEC-201"
+      },
+      {
+        "type": "jira",
+        "summary": "jira: Drives cookie hardening (__Host- prefix, SameSite) and CSRF token rotation with a 30s grace window to close pen-test findings.",
+        "url": "AUTH-94"
+      },
+      {
+        "type": "slack",
+        "summary": "slack: Performs cross-team security reviews (SEC-228 coordination) and mentors peers on CSP, nonce patterns, and safe refactors via #frontend-security and #sec-review.",
+        "url": "#sec-review (2026-03-25)"
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-arnav",
+    "generatedAt": "2026-04-26T07:00:15.326Z",
+    "published": false,
+    "summary": "Arnav owns deep, multi-layered Postgres infrastructure work on the data-infra team — from diagnosing query planner regressions to leading a multi-quarter Postgres 16 fleet upgrade. His artifacts show a consistent pattern of building systems that balance correctness and performance (staleness-aware replica routing, replication backlog handling) and of making that knowledge accessible to others through RFCs, runbooks, and consistency-model documentation cited across multiple design reviews.",
+    "skills": [
+      {
+        "name": "Postgres Internals",
+        "confidence": "high",
+        "evidence": [
+          "DATAINFRA-104 — root-caused a query planner regression on partitioned tables to stale histogram statistics after a bulk load and resolved it with targeted ANALYZE scheduling and a planner hint.",
+          "DATAINFRA-78 — owns the multi-quarter PG 14→16 upgrade epic including extension compatibility audit (pgvector, pg_partman, pg_repack) and per-tenant validation.",
+          "PR #3287 — diagnosed WAL sender stalling behavior under long-running transactions and implemented a backlog-aware throttle with a parallel apply path that respects relation-level ordering."
+        ]
+      },
+      {
+        "name": "Distributed Systems / Replication",
+        "confidence": "high",
+        "evidence": [
+          "PR #3210 — implemented staleness-aware read-replica routing with per-query consistency annotations, reducing cross-AZ read latency by ~38% for the analytics dashboard service.",
+          "PR #3287 — built producer-side throttling and a consumer parallel apply path to prevent logical replication lag from becoming unrecoverable under 4× peak write load.",
+          "DATAINFRA-78 — designed a logical-replication-driven cutover strategy for fleet-wide Postgres version upgrades."
+        ]
+      },
+      {
+        "name": "Technical Writing & Documentation",
+        "confidence": "high",
+        "evidence": [
+          "DATAINFRA-141 — authored the cross-region read consistency model doc (eventual within 200ms p99, opt-in strong consistency via primary routing), cited in 4 design reviews this quarter.",
+          "DATAINFRA-78 — wrote the upgrade RFC and operational runbook for the Postgres 16 fleet migration."
+        ]
+      },
+      {
+        "name": "System Ownership & Long-running Project Management",
+        "confidence": "medium",
+        "evidence": [
+          "DATAINFRA-78 — self-reported and assigned as sole owner of a multi-quarter, cross-fleet Postgres upgrade covering extension audits, cutover strategy, and per-tenant validation."
+        ]
+      },
+      {
+        "name": "Performance Investigation & Query Optimization",
+        "confidence": "medium",
+        "evidence": [
+          "DATAINFRA-104 — independently traced an analytics team-reported slow query to partition pruning failure caused by stale planner statistics and shipped a targeted fix.",
+          "PR #3210 — measured and achieved a ~38% reduction in cross-AZ read latency through replica routing changes."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Postgres Fleet Operations & Upgrades",
+        "description": "Arnav is driving the multi-quarter Postgres 14→16 upgrade across the data-infra fleet (DATAINFRA-78), encompassing extension compatibility audits, a logical-replication-based cutover approach, and per-tenant validation. Alongside this, he investigated and resolved a query planner regression on partitioned tables (DATAINFRA-104), demonstrating hands-on ownership of Postgres correctness at scale.",
+        "artifactRefs": [
+          "jira:DATAINFRA-78",
+          "jira:DATAINFRA-104"
+        ]
+      },
+      {
+        "title": "Read Scalability & Replication Reliability",
+        "description": "Two substantial PRs address different failure modes in Postgres replication and read distribution: staleness-aware replica routing that cuts cross-AZ read latency by ~38% while preserving per-query consistency controls (PR #3210), and a backlog-aware throttle plus parallel apply path that prevents logical replication from falling hopelessly behind under peak write load (PR #3287).",
+        "artifactRefs": [
+          "github:pr-3210",
+          "github:pr-3287"
+        ]
+      },
+      {
+        "title": "Knowledge Sharing & Cross-team Support",
+        "description": "Arnav produced technical artifacts that extend beyond his immediate team: a cross-region read consistency model document cited in four design reviews this quarter (DATAINFRA-141), and an upgrade RFC and runbook for the Postgres 16 migration (DATAINFRA-78). This writing reduces the bus factor on complex infrastructure decisions and supports other teams in making sound architectural choices.",
+        "artifactRefs": [
+          "jira:DATAINFRA-141",
+          "jira:DATAINFRA-78"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #3210 — implemented staleness-aware read-replica routing with per-query consistency annotations, cutting cross-AZ read latency ~38% for the analytics dashboard service.",
+        "url": "github:pr-3210"
+      },
+      {
+        "type": "github",
+        "summary": "PR #3287 — added producer-side backlog throttling and a parallel apply path on the consumer to prevent Postgres logical replication lag from becoming unrecoverable under 4× peak write load.",
+        "url": "github:pr-3287"
+      },
+      {
+        "type": "jira",
+        "summary": "DATAINFRA-78 — owns and authored the RFC and runbook for the multi-quarter Postgres 14→16 upgrade across the data-infra fleet, including extension compatibility and logical-replication-driven cutover.",
+        "url": "jira:DATAINFRA-78"
+      },
+      {
+        "type": "jira",
+        "summary": "DATAINFRA-104 — root-caused a query planner regression on partitioned tables to stale histogram statistics and shipped a targeted ANALYZE + planner hint fix for the analytics team.",
+        "url": "jira:DATAINFRA-104"
+      },
+      {
+        "type": "doc",
+        "summary": "DATAINFRA-141 — authored the cross-region read consistency model document (eventual/200ms p99 with opt-in strong consistency), cited in 4 design reviews this quarter.",
+        "url": "jira:DATAINFRA-141"
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-sahib",
+    "generatedAt": "2026-04-26T07:00:40.480Z",
+    "published": false,
+    "summary": "Sahib has built and shipped foundational internal tooling and observability infrastructure that other teams depend on daily. Their work spans developer experience automation, CI efficiency, and distributed tracing — consistently oriented toward reducing friction for the broader engineering org. Recent artifacts also show early moves into technical leadership, taking ownership of a cross-team review process.",
+    "skills": [
+      {
+        "name": "Developer Experience Tooling",
+        "confidence": "high",
+        "evidence": [
+          "PR #512 — authored platform-cli scaffold, a zero-to-service CLI that reduced new service setup from ~2 days to ~30 min, adopted by 5 teams within two weeks of launch.",
+          "Slack thread 2026-01-23 — coordinated launch in #platform-eng, fielded cross-team feedback from david and rayan, and triaged a follow-up request to support fraud-platform's service.yaml shape."
+        ]
+      },
+      {
+        "name": "CI/CD Pipeline Engineering",
+        "confidence": "high",
+        "evidence": [
+          "PR #538 — parallelized test stages by package and introduced a lockfile-keyed node_modules cache, cutting monorepo CI wall time from 18 min to 7 min.",
+          "Slack thread 2026-02-14 — announced the CI improvement in #internal-tooling and proactively asked for flakiness reports, indicating ongoing ownership of the pipeline."
+        ]
+      },
+      {
+        "name": "Observability & Distributed Tracing (OpenTelemetry)",
+        "confidence": "high",
+        "evidence": [
+          "PR #489 — replaced a home-grown tracing layer with OpenTelemetry across the shared API gateway, adding context propagation, per-route sampling config, and a tail-based sampler for slow requests.",
+          "PR #489 description — coordinated with rayan to verify zero latency impact on the fraud-scoring path, then migrated 23 downstream services off the old SDK in follow-up PRs."
+        ]
+      },
+      {
+        "name": "Cross-team Coordination & Adoption",
+        "confidence": "medium",
+        "evidence": [
+          "PR #489 — migration touched 23 downstream services and required buy-in from at least the fraud-platform team (rayan's latency budget review).",
+          "PR #512 and Slack 2026-01-23 — platform-cli was adopted by 5 teams within two weeks, with Sahib handling feature requests from teams outside platform-experience."
+        ]
+      },
+      {
+        "name": "Technical Leadership (emerging)",
+        "confidence": "low",
+        "evidence": [
+          "Slack thread 2026-03-09 — eng-manager nominated Sahib to lead a small group of 2 ICs and own the rubric for a new service-template review process; Sahib accepted and expressed intent to grow in this direction."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Internal Developer Experience & Automation",
+        "description": "Sahib built platform-cli scaffold (PR #512), a CLI tool that codified the company's golden-path service template — TypeScript, OTel, CI/CD, Helm chart, on-call stub — cutting new service setup time from roughly two days to 30 minutes. This was adopted across five teams and prompted immediate cross-team feature requests, signaling high org-wide leverage.",
+        "artifactRefs": [
+          "github:pr-512",
+          "slack-thread:2026-01-23"
+        ]
+      },
+      {
+        "title": "Observability Infrastructure Migration",
+        "description": "Sahib led the replacement of a home-grown tracing layer with OpenTelemetry across the shared API gateway (PR #489), covering context propagation, configurable sampling, and a tail-based sampler for slow-request capture. The migration extended to 23 downstream services and was validated against the latency budget of the fraud-scoring path in coordination with the fraud-platform team.",
+        "artifactRefs": [
+          "github:pr-489"
+        ]
+      },
+      {
+        "title": "CI Efficiency & Build Infrastructure",
+        "description": "Sahib restructured the monorepo CI pipeline (PR #538) by parallelizing test stages per package and introducing a shared dependency cache keyed on the lockfile hash, more than halving wall time from 18 to 7 minutes. They also removed a redundant lint job that duplicated pre-commit work, indicating attention to pipeline hygiene beyond the immediate metric improvement.",
+        "artifactRefs": [
+          "github:pr-538",
+          "slack-thread:2026-02-14"
+        ]
+      },
+      {
+        "title": "Early Technical Leadership",
+        "description": "Sahib was tapped by their engineering manager to lead a small group of two ICs on the service-template review process, including owning the evaluation rubric. While nascent, this reflects recognition of Sahib's domain ownership in the service-template space built through platform-cli and related work.",
+        "artifactRefs": [
+          "slack-thread:2026-03-09"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #489 — Migrated the shared API gateway from a home-grown tracer to OpenTelemetry with context propagation and tail-based sampling; subsequently migrated 23 downstream services off the old SDK.",
+        "url": "github:pr-489"
+      },
+      {
+        "type": "github",
+        "summary": "PR #512 — Built platform-cli scaffold, reducing new service setup from ~2 days to ~30 min; adopted by 5 teams within two weeks of launch.",
+        "url": "github:pr-512"
+      },
+      {
+        "type": "github",
+        "summary": "PR #538 — Parallelized monorepo CI test stages and added a lockfile-keyed node_modules cache, cutting average wall time from 18 min to 7 min.",
+        "url": "github:pr-538"
+      },
+      {
+        "type": "slack",
+        "summary": "Slack #platform-eng 2026-01-23 — Announced platform-cli launch, fielded feedback from multiple teams, and triaged a follow-up request to add a fraud-platform service template variant."
+      },
+      {
+        "type": "slack",
+        "summary": "Slack #internal-tooling 2026-02-14 — Communicated the CI speedup to the broader org and took ownership of any resulting pipeline flakiness."
+      },
+      {
+        "type": "slack",
+        "summary": "Slack #eng-mentorship 2026-03-09 — Accepted a technical leadership assignment to lead 2 ICs and own the service-template review rubric."
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-priya",
+    "generatedAt": "2026-04-26T07:01:03.251Z",
+    "published": false,
+    "summary": "Priya's artifacts show a track record of high-impact infrastructure work on the ML platform — migrating embedding storage to pgvector for a 12x p99 latency improvement and building an internal LLM eval harness used across teams. She consistently works across team boundaries, providing technical review and guidance beyond her immediate scope in data-infra.",
+    "skills": [
+      {
+        "name": "Vector Search & Embedding Infrastructure",
+        "confidence": "high",
+        "evidence": [
+          "PR #4072 — migrated recsys embedding store from Faiss-on-disk to pgvector with HNSW indexes, cutting p99 nearest-neighbor latency from 480ms to 38ms across 28 changed files.",
+          "Slack #ml-platform 2025-12-11 — announced live migration with $11k/mo cost savings on bespoke index hosts, confirming end-to-end ownership through deployment."
+        ]
+      },
+      {
+        "name": "LLM Evaluation & Model Quality Tooling",
+        "confidence": "high",
+        "evidence": [
+          "PR #4159 — authored a 1,100+ line internal eval harness covering RAG accuracy, instruction-following, and refusal-calibration with statistical significance bands across AI Gateway providers.",
+          "Slack #ai-tooling-curious 2026-03-04 — proactively offered to walk a colleague through the eval harness, indicating knowledge transfer and cross-team adoption of the tool."
+        ]
+      },
+      {
+        "name": "ML Systems Operability & Cost Reduction",
+        "confidence": "high",
+        "evidence": [
+          "PR #4072 — eliminated bespoke Faiss shard infrastructure in favor of Postgres-native pgvector, reducing operational footprint and saving ~$11k/month.",
+          "PR #4072 description notes nightly index build fits the existing maintenance window, demonstrating deliberate planning around operational constraints."
+        ]
+      },
+      {
+        "name": "Cross-team Technical Review",
+        "confidence": "medium",
+        "evidence": [
+          "Slack #payments-fraud 2025-09-22 — reviewed the Stripe migration perf gate design for the fraud team, recommending tail latency divergence tracking between shadow paths, which was adopted by the reviewer (rayan)."
+        ]
+      },
+      {
+        "name": "Statistical & Experimental Rigor",
+        "confidence": "medium",
+        "evidence": [
+          "PR #4159 — eval harness outputs side-by-side JSON reports with statistical significance bands, indicating applied knowledge of evaluation methodology beyond simple accuracy metrics."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Recommendation Infrastructure Modernization",
+        "description": "Priya led the end-to-end migration of the recsys embedding store from a custom Faiss-on-disk layout to pgvector with HNSW indexing, delivering a 12x p99 latency improvement, transactional consistency on embedding updates, and elimination of $11k/month in dedicated index hosting costs.",
+        "artifactRefs": [
+          "github:pr-4072",
+          "slack #ml-platform 2025-12-11"
+        ]
+      },
+      {
+        "title": "LLM Evaluation Tooling",
+        "description": "Priya designed and shipped an internal eval harness that enables deterministic, statistically rigorous comparison of LLM providers through the AI Gateway. The tool is already being adopted outside her immediate team, with colleagues in #ai-tooling-curious actively asking about it.",
+        "artifactRefs": [
+          "github:pr-4159",
+          "slack #ai-tooling-curious 2026-03-04"
+        ]
+      },
+      {
+        "title": "Cross-team Infrastructure Support & Review",
+        "description": "Priya contributed technical guidance outside data-infra by reviewing the payments-fraud team's Stripe migration latency gate, identifying a gap in the shadow-compare methodology and recommending tail latency divergence tracking — a suggestion the team incorporated.",
+        "artifactRefs": [
+          "slack #payments-fraud 2025-09-22"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #4072 — replaced bespoke Faiss-on-disk embedding store with pgvector + HNSW, achieving a 12x p99 latency reduction (480ms → 38ms) and ~$11k/month cost savings.",
+        "url": "ml-platform/recsys#4072"
+      },
+      {
+        "type": "github",
+        "summary": "PR #4159 — built an internal LLM eval harness with deterministic scoring (RAG accuracy, instruction-following, refusal-calibration) and statistical significance bands across AI Gateway providers.",
+        "url": "ml-platform/eval-harness#4159"
+      },
+      {
+        "type": "slack",
+        "summary": "#ml-platform 2025-12-11 — confirmed live deployment of pgvector migration including cost and latency outcomes, demonstrating full ownership through production."
+      },
+      {
+        "type": "slack",
+        "summary": "#payments-fraud 2025-09-22 — provided unsolicited but adopted cross-team feedback on tail latency divergence tracking for the Stripe migration perf gate."
+      },
+      {
+        "type": "slack",
+        "summary": "#ai-tooling-curious 2026-03-04 — offered to onboard colleagues onto the eval harness, surfacing cross-team knowledge-sharing beyond data-infra."
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-jonas",
+    "generatedAt": "2026-04-26T07:01:24.852Z",
+    "published": false,
+    "summary": "Jonas is a staff engineer whose artifacts center on org-wide incident-response infrastructure and system reliability. He reduced P1 MTTR from 47 to 19 minutes across the org in Q4 2025, established structured postmortem practices adopted by seven teams, and consistently makes invisible maintenance and ownership work visible for the engineers around him.",
+    "skills": [
+      {
+        "name": "Incident Response & MTTR Reduction",
+        "confidence": "high",
+        "evidence": [
+          "SRE-201 — drove org-wide P1 MTTR from 47 min to 19 min in Q4 2025 by standardizing incident-commander rotation, shared runbook templates, and auto-paging review cadence.",
+          "Slack #incidents 2026-02-02 — closed postmortem for INC-2026-0202, confirmed auto-paging chain delivered human eyes in 4 minutes, and assigned dated action items for runbook refresh (SRE-289)."
+        ]
+      },
+      {
+        "name": "Runbook Authoring & Maintenance",
+        "confidence": "high",
+        "evidence": [
+          "SRE-201 — introduced a shared runbook template as one of three structural changes in the Q4 incident-response improvement epic.",
+          "Slack #incidents 2026-02-02 — identified a 6-month stale runbook during postmortem review and filed SRE-289 to establish a quarterly refresh process.",
+          "Slack #sre 2025-11-04 — confirmed rollback runbook was prepared and kill-switch drill completed before the Stripe cutover, serving as primary on-call."
+        ]
+      },
+      {
+        "name": "Postmortem Facilitation & Technical Writing",
+        "confidence": "high",
+        "evidence": [
+          "SRE-244 — authored a structured org-wide postmortem template (timeline, contributing factors, customer impact, owner-assigned action items, 'what went well') that replaced ad-hoc formats and was adopted by all 7 SRE-aligned teams in Q1.",
+          "Slack #incidents 2026-02-02 — executed the new template in practice: updated timeline, bounded customer impact, and assigned due-dated action items for INC-2026-0202."
+        ]
+      },
+      {
+        "name": "Cross-team On-call & Reliability Support",
+        "confidence": "medium",
+        "evidence": [
+          "Slack #sre 2025-11-04 — took primary on-call for the Stripe payment-system cutover, a cross-team event outside fraud-platform, with a shadow engineer paired for coverage.",
+          "FRAUD-44 — provided SRE-side on-call coverage, runbook reviews, and kill-switch drills to support the fraud-scoring system through Q4 holiday traffic."
+        ]
+      },
+      {
+        "name": "Making Invisible Work Visible (Advocacy & Sponsorship)",
+        "confidence": "medium",
+        "evidence": [
+          "FRAUD-44 — explicitly filed a Jira epic to surface Rayan's 18 months of solo fraud-scoring system maintenance work ahead of a promotion cycle, ensuring the contribution was documented and credited."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Incident Response Infrastructure",
+        "description": "Jonas led a quarter-long effort to systematically reduce org-wide P1 incident response time. This included formalizing the incident-commander rotation, authoring a shared runbook template, and establishing a mandatory 48-hour post-P1 paging review. The work resulted in MTTR dropping from 47 to 19 minutes with zero missed pages during holiday peak.",
+        "artifactRefs": [
+          "jira:SRE-201",
+          "slack:#incidents-2026-02-02",
+          "slack:#sre-2025-11-04"
+        ]
+      },
+      {
+        "title": "Postmortem Practice & Organizational Learning",
+        "description": "Jonas designed and deployed a structured postmortem template that replaced ad-hoc formats across seven SRE-aligned teams. The template emphasizes contributing factors over root-cause blame, bounded customer impact, and time-boxed action items with named owners. He also applied the template in live incident reviews.",
+        "artifactRefs": [
+          "jira:SRE-244",
+          "slack:#incidents-2026-02-02"
+        ]
+      },
+      {
+        "title": "System Ownership Visibility & Peer Advocacy",
+        "description": "Recognizing that long-running maintenance work is routinely undercounted in promotion processes, Jonas filed FRAUD-44 explicitly to document a colleague's 18-month solo ownership of the fraud-scoring system. He also provided direct SRE support (on-call coverage, runbook reviews, kill-switch drills) to reduce single-person risk on that system.",
+        "artifactRefs": [
+          "jira:FRAUD-44"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "jira",
+        "summary": "SRE-201 — led Q4 org-wide incident-response improvement epic, cutting P1 MTTR from 47 min to 19 min with three structural changes and zero missed pages during holiday peak.",
+        "url": "jira:SRE-201"
+      },
+      {
+        "type": "jira",
+        "summary": "SRE-244 — authored structured postmortem template adopted by all 7 SRE-aligned teams in Q1 2026, replacing ad-hoc formats with a blameless, owner-assigned framework.",
+        "url": "jira:SRE-244"
+      },
+      {
+        "type": "jira",
+        "summary": "FRAUD-44 — filed epic to make a colleague's 18-month solo system-maintenance contribution visible before a promotion cycle, while providing direct SRE on-call support.",
+        "url": "jira:FRAUD-44"
+      },
+      {
+        "type": "slack",
+        "summary": "#incidents 2026-02-02 — ran live postmortem for INC-2026-0202, confirmed paging chain health, flagged stale runbook, and filed SRE-289 for quarterly refresh cadence."
+      },
+      {
+        "type": "slack",
+        "summary": "#sre 2025-11-04 — served as primary on-call for cross-team Stripe cutover, completed kill-switch drill, and paired a shadow engineer for coverage continuity."
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-mei",
+    "generatedAt": "2026-04-26T07:01:50.046Z",
+    "published": false,
+    "summary": "Mei's artifacts show a frontend engineer who digs into concrete performance problems and builds product features end-to-end. In under a year she shipped a custom windowing solution that raised scroll FPS from 22 to 60 and cut memory by ~40 MB, and she built a resilient multi-step merchant onboarding flow that handles a real upstream cold-start failure. She actively seeks mentorship and cross-team knowledge to deepen her mental model of frontend performance at scale.",
+    "skills": [
+      {
+        "name": "React Performance Optimization",
+        "confidence": "high",
+        "evidence": [
+          "PR #2230 — replaced react-window with a custom IntersectionObserver-backed windowing impl, raising scroll FPS 22→60 and cutting memory ~40 MB on the experiments-list page.",
+          "PR #2230 description explicitly benchmarks M1 Air scroll FPS and heap memory delta, showing non-trivial measurement and iteration, not just a library swap."
+        ]
+      },
+      {
+        "name": "Complex Form & Multi-step UI Authoring",
+        "confidence": "medium",
+        "evidence": [
+          "PR #2271 — built the full frontend for the new merchant onboarding flow: multi-step form, optimistic submission, and retry logic (22 files changed, 980 additions)."
+        ]
+      },
+      {
+        "name": "Resilient API Integration (retry/error handling)",
+        "confidence": "medium",
+        "evidence": [
+          "PR #2271 — implemented retry-on-502 with 200 ms backoff after diagnosing the fraud-scoring service cold-start issue surfaced in #frontend-help on 2025-11-22.",
+          "Slack thread #frontend-help 2025-11-22 — identified that intermittent 502s were an upstream cold-start, not a frontend bug, and applied the fix correctly."
+        ]
+      },
+      {
+        "name": "Cross-functional Debugging & Problem Diagnosis",
+        "confidence": "medium",
+        "evidence": [
+          "Slack thread #frontend-help 2025-11-22 — surfaced and correctly scoped an ambiguous 502 error to the fraud-scoring service, avoiding a longer frontend investigation.",
+          "PR #2271 — integrated the diagnosis directly into production code with documented rationale (Rayan's note)."
+        ]
+      },
+      {
+        "name": "Design Systems Awareness & Adoption",
+        "confidence": "low",
+        "evidence": [
+          "Slack thread #design-systems 2026-02-19 — acknowledged dark-mode parity shipped by Tisha unblocked a week of work on the onboarding flow, indicating active tracking and use of design system outputs."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Frontend Performance Engineering",
+        "description": "Mei identified a real-world scroll performance regression on a high-row-count page and shipped a custom windowing solution backed by IntersectionObserver, replacing an off-the-shelf library. The work included profiling, benchmarking, and measurable outcomes (FPS and memory). She is also actively pairing with a senior IC to build a deeper mental model of performance at scale.",
+        "artifactRefs": [
+          "github:pr-2230",
+          "slack-threads.md — #eng-mentorship 2026-03-12"
+        ]
+      },
+      {
+        "title": "Merchant Onboarding Flow",
+        "description": "Mei owned the full frontend build for the new merchant onboarding experience: multi-step form state, optimistic submission, and defensive error handling for an upstream service cold-start. She diagnosed the 502 issue in a public help channel before coding the fix, demonstrating both debugging instinct and cross-team communication.",
+        "artifactRefs": [
+          "github:pr-2271",
+          "slack-threads.md — #frontend-help 2025-11-22",
+          "slack-threads.md — #design-systems 2026-02-19"
+        ]
+      },
+      {
+        "title": "Mentorship & Professional Development Seeking",
+        "description": "Mei proactively requested a recurring pairing slot with a senior frontend IC in #eng-mentorship, framing a specific learning goal (performance mental models at scale). This reflects self-directed growth behaviour, not passive wait-for-feedback development.",
+        "artifactRefs": [
+          "slack-threads.md — #eng-mentorship 2026-03-12"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #2230 — custom windowing + IntersectionObserver replaced react-window; scroll FPS 22→60, memory −40 MB on experiments-list page.",
+        "url": "growth/web-platform#2230"
+      },
+      {
+        "type": "github",
+        "summary": "PR #2271 — full frontend for merchant onboarding: multi-step form, optimistic submission, and 502 retry-backoff for fraud-scoring cold-start (22 files, 980 additions).",
+        "url": "growth/web-platform#2271"
+      },
+      {
+        "type": "slack",
+        "summary": "#frontend-help 2025-11-22 — surfaced intermittent 502s on fraud-scoring API, correctly scoped issue to upstream cold-start, applied fix in same sprint."
+      },
+      {
+        "type": "slack",
+        "summary": "#eng-mentorship 2026-03-12 — proactively requested regular pairing with senior frontend IC, citing a specific learning goal around performance at scale."
+      },
+      {
+        "type": "slack",
+        "summary": "#design-systems 2026-02-19 — tracked dark-mode parity shipped by Tisha and immediately connected it to unblocking the upcoming onboarding flow work."
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-david",
+    "generatedAt": "2026-04-26T07:02:11.643Z",
+    "published": false,
+    "summary": "David's artifacts show early but substantive contributions spanning backend refactoring and developer-experience tooling. His work demonstrates an ability to take on non-trivial system changes — coordinating design with senior engineers before writing code — and a pragmatic instinct for reducing friction in CI/review workflows. He is actively building exposure in infra-adjacent areas and has begun seeking mentorship toward a platform/infra path.",
+    "skills": [
+      {
+        "name": "Async programming and concurrency patterns",
+        "confidence": "medium",
+        "evidence": [
+          "PR #1322 — refactored the fraud rules-engine evaluation path from synchronous to async, adding a bounded queue for backpressure across 18 files (+642/-401 lines).",
+          "Slack #eng-mentorship 2026-02-08 — proactively sought design review from Rayan on error-handling before writing code, showing deliberate approach to async complexity."
+        ]
+      },
+      {
+        "name": "CI/CD tooling and pipeline development",
+        "confidence": "medium",
+        "evidence": [
+          "PR #545 — added automated deploy-preview comments to PRs touching service.yaml in the platform/ci-pipeline repo, reducing manual helm template runs for reviewers.",
+          "Slack #internal-tooling 2026-03-04 — announced the helm-preview feature and framed it within a broader platform-cli workflow, indicating awareness of CI tooling ecosystem."
+        ]
+      },
+      {
+        "name": "Helm / Kubernetes configuration",
+        "confidence": "low",
+        "evidence": [
+          "PR #545 — implemented diff-rendered Helm chart value previews, requiring working knowledge of helm template output and service.yaml structure."
+        ]
+      },
+      {
+        "name": "Cross-team collaboration and design coordination",
+        "confidence": "low",
+        "evidence": [
+          "PR #1322 description notes pairing with Rayan (fraud-platform team) to map out the async refactor design before implementation, working outside David's primary platform-experience team.",
+          "Slack #eng-mentorship 2026-02-08 — initiated design conversation with a senior engineer from a different team to validate error-handling approach."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Backend Systems & Async Refactoring",
+        "description": "David's most substantial engineering work centers on a meaningful refactor of the fraud rules-engine evaluation path from sync to async (PR #1322). The change introduced backpressure via a bounded queue and spanned 18 files. Notably, David paired with a senior engineer to validate the design before coding, surfacing careful judgment about system correctness.",
+        "artifactRefs": [
+          "github:pr-1322",
+          "slack-thread:#eng-mentorship-2026-02-08"
+        ]
+      },
+      {
+        "title": "Developer Experience & CI Tooling",
+        "description": "David shipped a targeted DX improvement to the shared CI pipeline (PR #545): automated Helm chart diff previews posted as PR comments whenever service.yaml is touched. The tooling addressed a concrete, recurring pain point in code review. Sahib from the platform-cli team immediately integrated it into recommended workflows, indicating real cross-team utility.",
+        "artifactRefs": [
+          "github:pr-545",
+          "slack-thread:#internal-tooling-2026-03-04"
+        ]
+      },
+      {
+        "title": "Infra-Adjacent Growth & Community Engagement",
+        "description": "David has begun deliberately pursuing infra knowledge beyond his current team scope, as evidenced by participation in #infra-curious (2026-03-15) and his framing of recent work (Helm tooling, CI pipeline, fraud-platform internals) as steps toward an infra engineering path. This is a career signal, not yet a demonstrated skill cluster, but it provides context for the direction of his contributions.",
+        "artifactRefs": [
+          "slack-thread:#infra-curious-2026-03-15"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #1322 — refactored fraud rules-engine evaluation from sync to async with bounded-queue backpressure; 18 files changed, paired with senior engineer on design.",
+        "url": "github:pr-1322"
+      },
+      {
+        "type": "github",
+        "summary": "PR #545 — added Helm chart diff-preview comments to PRs touching service.yaml in the shared CI pipeline, reducing reviewer toil.",
+        "url": "github:pr-545"
+      },
+      {
+        "type": "slack",
+        "summary": "#eng-mentorship 2026-02-08 — proactively initiated design discussion with Rayan to validate async error-handling approach before starting PR #1322."
+      },
+      {
+        "type": "slack",
+        "summary": "#internal-tooling 2026-03-04 — announced helm-preview launch and connected it to the broader platform-cli workflow, prompting cross-team adoption."
+      },
+      {
+        "type": "slack",
+        "summary": "#infra-curious 2026-03-15 — publicly signaled infra career intent and sought mentorship from engineers who have made the product-to-infra transition."
+      }
+    ]
+  }
+]

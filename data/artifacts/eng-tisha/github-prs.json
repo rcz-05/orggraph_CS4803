@@ -1,0 +1,93 @@
+[
+  {
+    "id": "github:pr-2104",
+    "repo": "growth/web-platform",
+    "number": 2104,
+    "title": "Migrate growth-experiments client to React Server Components + streaming",
+    "state": "merged",
+    "author": "tisha",
+    "merged_at": "2026-01-08T17:30:00Z",
+    "files_changed": 38,
+    "additions": 1421,
+    "deletions": 988,
+    "description": "Moves the growth-experiments client off the legacy Pages Router pattern onto App Router with React Server Components and streaming. Reduced TTI on the experiments dashboard from 2.4s → 0.9s on a cold load (P75). Also collapsed three client-side data hooks into a single server fetch — kept the same component API so consumers didn't have to change anything.\n\nDesign system tokens unchanged, but I refactored the `<ExperimentCard />` family to compose better with RSC."
+  },
+  {
+    "id": "github:pr-2178",
+    "repo": "growth/web-platform",
+    "number": 2178,
+    "title": "Add design tokens for new growth funnel + dark mode parity",
+    "state": "merged",
+    "author": "tisha",
+    "merged_at": "2026-02-19T11:14:22Z",
+    "files_changed": 24,
+    "additions": 612,
+    "deletions": 198,
+    "description": "Extends the shared design tokens to cover the new growth funnel screens. Achieved dark-mode parity for all 18 funnel components with no per-component overrides — all driven by the token set. Wrote a Storybook story per component for visual regression."
+  },
+  {
+    "id": "github:pr-1389",
+    "repo": "payments/fraud-platform",
+    "number": 1389,
+    "title": "Schema split: transaction-attempts → its own table",
+    "state": "merged",
+    "author": "tisha",
+    "merged_at": "2026-01-30T14:55:00Z",
+    "files_changed": 16,
+    "additions": 504,
+    "deletions": 187,
+    "description": "Cross-team rotation work — Fraud Platform was bandwidth-limited on schema migrations. Splits `transaction_attempts` out of `transactions` to reduce write contention on the hot path. Online migration via pg_repack (rayan paired with me on this — first time I've done a migration of this size). No lock spikes during the cut."
+  },
+  {
+    "id": "github:pr-2245",
+    "repo": "growth/web-platform",
+    "number": 2245,
+    "title": "Roll out strict CSP across web-platform with nonce-based script allowlist",
+    "state": "merged",
+    "author": "tisha",
+    "merged_at": "2026-03-04T19:48:11Z",
+    "files_changed": 41,
+    "additions": 1108,
+    "deletions": 463,
+    "description": "Replaces our permissive CSP (`script-src 'self' 'unsafe-inline' *.cdn.example.com`) with a strict policy: `script-src 'self' 'nonce-{REQUEST_NONCE}' 'strict-dynamic'`. Eliminates inline-script eval as an XSS vector across all 5 web surfaces (growth funnel, experiments dashboard, account settings, checkout, internal admin).\n\nKey work:\n- Per-request nonce generated in middleware, threaded through to the document head via a React context so server-rendered `<script>` tags pick it up automatically.\n- Audited every `dangerouslySetInnerHTML` callsite (47 total): 6 needed nonce-aware refactors, 4 we removed entirely as dead code, 37 were already safe.\n- Three-phase rollout: Report-Only for 14d → Enforce on internal admin → Enforce on user-facing surfaces. CSP-violation telemetry pipeline ships violation reports to a per-team dashboard so partner teams can self-serve fixes.\n- Wrote `docs/security/csp-runbook.md` covering nonce strategy, common violation patterns, and the rollback flag.\n\nResult: 0 reported XSS regressions during 30d rollout. Caught 2 unrelated security bugs in the Report-Only window via the violation feed (a stray `eval()` in a third-party widget, a vendor script loading from an unapproved CDN).",
+    "review_comments": [
+      "david: the nonce-context pattern is really clean. mind if i lift it for the internal admin tooling we're building?",
+      "tisha: please do — i've also written up the rationale in `docs/security/csp-runbook.md` if your team wants the full strategy doc.",
+      "mei: this unblocks the new onboarding flow for me, no more inline-script wrestling. thank you 🙏"
+    ]
+  },
+  {
+    "id": "github:pr-2261",
+    "repo": "growth/web-platform",
+    "number": 2261,
+    "title": "Add Subresource Integrity (SRI) hashes to all third-party script loads",
+    "state": "merged",
+    "author": "tisha",
+    "merged_at": "2026-03-18T15:22:50Z",
+    "files_changed": 19,
+    "additions": 412,
+    "deletions": 88,
+    "description": "Supply-chain hardening. We were loading 11 third-party scripts (analytics, error monitoring, A/B testing, two CDN-hosted polyfills) without integrity hashes — a compromise of any one CDN would let an attacker inject arbitrary JS into our pages.\n\nThis PR adds:\n- A build-step that fetches each pinned third-party URL at build time, computes the SHA-384 hash, and emits the `integrity` + `crossorigin` attributes on the corresponding `<script>` tag.\n- A weekly cron that re-fetches the pinned URLs and alerts in `#frontend-security` if any hash drift is detected (vendor pushed an update without notice — this should never happen on pinned URLs but happened twice this year before SRI).\n- Documentation in `docs/security/sri-policy.md` covering when SRI is required vs optional and the dependency-review process.\n\nNo runtime cost — hashes are computed at build time, browser checks are O(1) per script.",
+    "review_comments": [
+      "rayan: this is the kind of thing nobody thanks you for until the day a CDN gets popped. nice. 🛡️",
+      "tisha: 😅 thanks. the hash-drift cron is the real win — caught a vendor pushing a `latest` tag silently last quarter (we had it pinned but they were sneaking through caching). queued a follow-up to send a snyk-style PR when their checksum changes."
+    ]
+  },
+  {
+    "id": "github:pr-2289",
+    "repo": "growth/web-platform",
+    "number": 2289,
+    "title": "Harden auth cookie attributes (SameSite=Strict, __Host- prefix) + CSRF token rotation on funnel forms",
+    "state": "merged",
+    "author": "tisha",
+    "merged_at": "2026-04-02T10:14:33Z",
+    "files_changed": 27,
+    "additions": 624,
+    "deletions": 211,
+    "description": "Closes a class of session-fixation and CSRF bugs flagged in the Q1 internal pen-test report. Two coordinated changes:\n\n1) **Cookie hardening.** Auth cookies now use the `__Host-` prefix (forces Secure + Path=/ + no Domain) and `SameSite=Strict` for the session cookie, `SameSite=Lax` for the long-lived 'remember me' cookie (Strict breaks cross-site OAuth bounce). Added a one-time migration that re-issues cookies on the next authenticated request to avoid forced sign-out.\n\n2) **CSRF token rotation.** Funnel forms (signup, password reset, plan upgrade) previously reused a single CSRF token per session. Now rotated per-form-render, with the previous token accepted for a 30s grace window to avoid double-submit failures. Token is bound to the user session + form-id (`HMAC(secret, session_id + form_id + nonce)`).\n\nCoordinated with backend (auth team) on the cookie migration and with the AUTH-94 tracking ticket. Pen-test re-run scheduled for next week — expect those findings closed.",
+    "review_comments": [
+      "jonas: the 30s grace window for CSRF token rotation is the kind of pragmatic detail that prevents this rollout from waking me up.",
+      "tisha: ya — first draft was strict rotation, david pointed out we'd see ~2% double-submits during normal click latency. feels like a good tradeoff."
+    ]
+  }
+]

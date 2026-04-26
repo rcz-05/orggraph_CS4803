@@ -1,0 +1,28 @@
+[
+  {
+    "id": "github:pr-1322",
+    "repo": "payments/fraud-platform",
+    "number": 1322,
+    "title": "Refactor rules-engine evaluation to async",
+    "state": "merged",
+    "author": "david",
+    "merged_at": "2026-02-12T14:50:00Z",
+    "files_changed": 18,
+    "additions": 642,
+    "deletions": 401,
+    "description": "Refactors the fraud rules-engine evaluation path from sync to async. Adds backpressure via a bounded queue. Rayan reviewed and approved with two minor follow-ups (per-rule circuit breaker tracked separately in FRAUD-156). My first significant PR on the platform — paired with Rayan to map out the design before writing code."
+  },
+  {
+    "id": "github:pr-545",
+    "repo": "platform/ci-pipeline",
+    "number": 545,
+    "title": "Add deploy-preview comments to PRs touching service.yaml",
+    "state": "merged",
+    "author": "david",
+    "merged_at": "2026-03-04T16:20:00Z",
+    "files_changed": 7,
+    "additions": 218,
+    "deletions": 5,
+    "description": "Small DX win — when a PR touches `service.yaml`, post a comment with a diff-rendered preview of the resulting Helm chart values. Saves reviewers from running `helm template` locally to sanity-check."
+  }
+]

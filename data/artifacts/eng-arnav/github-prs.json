@@ -1,0 +1,28 @@
+[
+  {
+    "id": "github:pr-3210",
+    "repo": "data-infra/query-router",
+    "number": 3210,
+    "title": "Implement read-replica routing with staleness-aware fallback",
+    "state": "merged",
+    "author": "arnav",
+    "merged_at": "2026-01-18T09:22:14Z",
+    "files_changed": 19,
+    "additions": 1102,
+    "deletions": 286,
+    "description": "Routes read queries to the closest healthy read replica with a staleness threshold; falls back to the primary if no replica is fresh enough. Cuts cross-AZ read latency by ~38% for the analytics dashboard service. Includes a per-query staleness annotation so callers can opt into stronger consistency without falling back globally."
+  },
+  {
+    "id": "github:pr-3287",
+    "repo": "data-infra/query-router",
+    "number": 3287,
+    "title": "Postgres logical replication: handle large transaction backlog gracefully",
+    "state": "merged",
+    "author": "arnav",
+    "merged_at": "2026-02-25T15:08:00Z",
+    "files_changed": 11,
+    "additions": 487,
+    "deletions": 102,
+    "description": "When a long-running transaction stalls the WAL sender, replicas would fall behind by 10s of GB and never catch up without manual intervention. Added a backlog-aware throttle on the producer side and a parallel apply path on the consumer that respects ordering within a single relation. Tested at 4× our peak write rate."
+  }
+]

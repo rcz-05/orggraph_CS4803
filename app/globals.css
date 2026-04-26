@@ -1,0 +1,63 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #6b6b6b;
+  --color-card: #ffffff;
+  --color-card-foreground: #0a0a0a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0a0a0a;
+  --color-primary: #0a0a0a;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #0a0a0a;
+  --color-accent: #f5f5f5;
+  --color-accent-foreground: #0a0a0a;
+  --color-destructive: #ef4444;
+  --color-border: #e5e5e5;
+  --color-input: #e5e5e5;
+  --color-ring: #0a0a0a;
+  --radius: 0.75rem;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --font-sans: "Inter", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+
+  /* OrgGraph feature accents (per docs/BRAND.md) */
+  --color-accent-profile-bg: #fce8e1;
+  --color-accent-profile-badge-bg: #f5c4b8;
+  --color-accent-profile-badge-fg: #9e4433;
+
+  --color-accent-search-bg: #f5edd0;
+  --color-accent-search-badge-bg: #e5d5a0;
+  --color-accent-search-badge-fg: #7a6520;
+
+  --color-accent-teams-bg: #dce4ef;
+  --color-accent-teams-badge-bg: #b5c5d6;
+  --color-accent-teams-badge-fg: #3a566e;
+
+  --color-accent-evidence-bg: #e2edd9;
+  --color-accent-evidence-badge-bg: #b8cdb0;
+  --color-accent-evidence-badge-fg: #3d6132;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans scroll-smooth;
+  }
+}

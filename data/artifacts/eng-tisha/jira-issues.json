@@ -1,0 +1,38 @@
+[
+  {
+    "id": "jira:SEC-201",
+    "key": "SEC-201",
+    "title": "Quarterly XSS audit — frontend surfaces",
+    "status": "Done",
+    "assignee": "tisha",
+    "reporter": "security-team-bot",
+    "priority": "High",
+    "epic": "SEC-200 Q1 Frontend Security Posture",
+    "completed_at": "2026-02-08",
+    "description": "Owner: tisha. End-to-end review of all 47 user-input surfaces across web-platform for XSS exposure. Methodology: enumerate every `dangerouslySetInnerHTML` callsite, every `innerHTML=` assignment, every URL-derived attribute (`href`, `src`, `style`), and every dynamically-evaluated string template. Cross-reference against framework-level escaping guarantees.\n\nFindings: 6 surfaces required fixes (4 missing escape on user-controlled `href`, 2 dangerous template interpolation in legacy email-preview component). All fixed in PR #2218 / PR #2222. Remaining 41 surfaces verified safe and added to a regression checklist (`docs/security/xss-audit-checklist.md`) for future audits.\n\nFollow-up: opened SEC-218 to remove the *class* of bug via strict CSP rollout."
+  },
+  {
+    "id": "jira:SEC-218",
+    "key": "SEC-218",
+    "title": "Strict CSP enforcement rollout — web-platform",
+    "status": "Done",
+    "assignee": "tisha",
+    "reporter": "tisha",
+    "priority": "High",
+    "epic": "SEC-200 Q1 Frontend Security Posture",
+    "completed_at": "2026-03-04",
+    "description": "Owner: tisha. Strategy doc + 3-phase rollout for strict Content-Security-Policy across all web surfaces.\n\nPlan:\n1. Move CSP off `'unsafe-inline'` to nonce-based allowlist (`'nonce-{REQUEST_NONCE}' 'strict-dynamic'`).\n2. Per-request nonce generation in middleware, threaded through React via context.\n3. Three-phase rollout: Report-Only (14d) → Enforce (internal) → Enforce (user-facing).\n4. CSP-violation telemetry pipeline so partner teams self-serve fixes from a per-team dashboard.\n\nDelivered in PR #2245. 0 reported XSS regressions during 30d rollout. 2 unrelated security bugs caught in the Report-Only window. Wrote `docs/security/csp-runbook.md` covering nonce strategy + common violation patterns + rollback flag.\n\nFollow-up: SEC-225 (extending CSP to internal admin surfaces, scheduled Q2)."
+  },
+  {
+    "id": "jira:AUTH-94",
+    "key": "AUTH-94",
+    "title": "Cookie-attribute hardening + CSRF token rotation",
+    "status": "Done",
+    "assignee": "tisha",
+    "reporter": "auth-team",
+    "priority": "High",
+    "epic": "AUTH-90 Q1 Pen-test follow-ups",
+    "completed_at": "2026-04-02",
+    "description": "Owner: tisha (frontend), eng-david (backend coordination). Closes pen-test findings PT-2026-Q1-08 (session-fixation risk) and PT-2026-Q1-12 (predictable CSRF token reuse).\n\nScope:\n- Migrate auth cookies to `__Host-` prefix (forces Secure + Path=/ + no Domain) with `SameSite=Strict` for session cookie, `SameSite=Lax` for long-lived 'remember me'.\n- One-time cookie re-issue migration to avoid forced sign-out.\n- CSRF token rotation per-form-render with 30s grace window for previous token (avoids double-submit failures).\n- Token bound to session + form-id via HMAC.\n\nDelivered in PR #2289. Pen-test re-run scheduled — both findings expected closed.\n\nReviewer notes: pragmatic 30s grace window came out of david's review (strict rotation would have caused ~2% double-submits at normal click latency)."
+  }
+]

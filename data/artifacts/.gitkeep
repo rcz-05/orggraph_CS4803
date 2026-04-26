@@ -1,0 +1,3 @@
+# Mock GitHub/Jira/Slack artifacts per engineer go here.
+# Layout: data/artifacts/<engineerId>/{github-pr-1.json, jira-FRAUD-12.json, slack-thread-7.json}
+# Owned by feature/profile-pipeline (Rayan, SCRUM-14).

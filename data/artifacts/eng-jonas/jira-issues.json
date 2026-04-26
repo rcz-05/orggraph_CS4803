@@ -1,0 +1,29 @@
+[
+  {
+    "id": "jira:SRE-201",
+    "key": "SRE-201",
+    "type": "Epic",
+    "title": "Q4 2025 incident-response improvements",
+    "status": "Done",
+    "assignee": "jonas",
+    "description": "Cut the org-wide MTTR on P1 incidents from 47min → 19min over Q4. Drove three changes: standardized incident-commander rotation, a new shared runbook template, and an auto-paging review for every P1 within 48hrs. 0 P1s missed pager during the holiday peak."
+  },
+  {
+    "id": "jira:SRE-244",
+    "key": "SRE-244",
+    "type": "Story",
+    "title": "Author org-wide incident postmortem template",
+    "status": "Done",
+    "assignee": "jonas",
+    "description": "Replaces the previous ad-hoc postmortem format with a structured template covering: timeline, contributing factors (not 'root cause'), customer impact, action items with owners + due dates, and a 'what went well' section. Adopted across all 7 SRE-aligned teams in Q1."
+  },
+  {
+    "id": "jira:FRAUD-44",
+    "key": "FRAUD-44",
+    "type": "Epic",
+    "title": "Maintain fraud-scoring system reliability through Q4 holiday traffic",
+    "status": "Done",
+    "reporter": "jonas",
+    "description": "Filed this to make Rayan's solo 18-month maintenance work visible for the next promo cycle. SRE-side support: shared on-call coverage, runbook reviews, kill-switch drills."
+  }
+]

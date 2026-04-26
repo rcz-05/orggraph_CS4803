@@ -1,0 +1,63 @@
+[
+  {
+    "id": "github:pr-1283",
+    "repo": "payments/fraud-platform",
+    "number": 1283,
+    "title": "Migrate legacy payment processor to Stripe API with zero-downtime cutover",
+    "state": "merged",
+    "author": "rayan",
+    "merged_at": "2025-11-04T18:22:11Z",
+    "files_changed": 47,
+    "additions": 2841,
+    "deletions": 1932,
+    "description": "Migrates the legacy in-house payment processor to Stripe's Payment Intents API. Handles ~$2M/day in transaction volume across 14 markets. Cutover was zero-downtime: dual-write window of 72hrs, shadow-traffic comparison job, and a feature-flagged rollback path. Includes idempotency-key plumbing through the existing fraud-scoring pipeline so we don't double-charge on retries.\n\nKey decisions:\n- Kept the fraud rules engine in-process (not as a side-car) to preserve <50ms p99 added latency.\n- Wrapped Stripe webhook handlers in our existing event-bus consumer pattern so downstream teams (Risk, Ledger) didn't have to change anything.\n- Added a kill-switch on `payments.stripe_enabled` config so we can fail back to legacy in <30s.",
+    "review_comments": [
+      "jonas: nice work on the dual-write window. one nit: the shadow-comparison job should emit a metric for tail-latency divergence, not just mean. otherwise you'll miss the long tail when you cut over.",
+      "rayan: good call, added p95/p99 emission in 9b3a2f1. also added an alarm at >20% divergence."
+    ]
+  },
+  {
+    "id": "github:pr-1340",
+    "repo": "payments/fraud-platform",
+    "number": 1340,
+    "title": "Reduce fraud-rules query latency by 40% via composite indexes + plan hints",
+    "state": "merged",
+    "author": "rayan",
+    "merged_at": "2025-12-19T14:08:55Z",
+    "files_changed": 12,
+    "additions": 318,
+    "deletions": 84,
+    "description": "The fraud-rules evaluation path was hitting a sequential scan on `transactions(merchant_id, created_at)` for high-volume merchants. EXPLAIN ANALYZE showed the planner was rejecting the partial index because of a stale histogram on `created_at`. Fixed by:\n- Adding a composite index on `(merchant_id, created_at DESC) INCLUDE (amount, currency)` to cover the hot read path.\n- Manual `ANALYZE` cadence for the 8 highest-volume merchants every 15 min (cron).\n- Removed an unused trigger that fired on every row insert and was dragging write throughput.\n\nResult: p99 query time on the fraud-rules read path dropped from 142ms → 84ms (-40%). Daily transaction volume on the new system is steady at $2M+ with zero rule-evaluation timeouts in the last 7 days.",
+    "review_comments": [
+      "priya: the INCLUDE columns help here but watch the index size — it'll grow with `transactions`. Worth a partition strategy in Q1.",
+      "rayan: agreed. opened FRAUD-127 to track partitioning by month."
+    ]
+  },
+  {
+    "id": "github:pr-1401",
+    "repo": "payments/fraud-platform",
+    "number": 1401,
+    "title": "Add idempotency-key replay protection to fraud-scoring API gateway",
+    "state": "merged",
+    "author": "rayan",
+    "merged_at": "2026-01-22T09:47:30Z",
+    "files_changed": 8,
+    "additions": 412,
+    "deletions": 27,
+    "description": "Closes FRAUD-89. Some upstream callers (notably the mobile checkout team) were retrying on 5xx without idempotency keys, which could re-trigger scoring on the same transaction and inflate decline rates. Added a small Redis-backed dedup layer in front of the API gateway with a 24hr TTL keyed on `(merchant_id, transaction_id, attempt_id)`.\n\nDocs updated in `docs/api/fraud-scoring.md`. Wrote a short RFC at `docs/rfcs/0014-idempotency.md` first to align with the Risk team.",
+    "review_comments": []
+  },
+  {
+    "id": "github:pr-1456",
+    "repo": "platform/dev-portal",
+    "number": 1456,
+    "title": "Internal Developer Portal: surface fraud-platform service catalog",
+    "state": "merged",
+    "author": "rayan",
+    "merged_at": "2026-02-11T16:14:02Z",
+    "files_changed": 23,
+    "additions": 891,
+    "deletions": 12,
+    "description": "Adds the Fraud Platform team's owned services (fraud-scoring-api, rules-engine, payment-gateway, ledger-sync) to the internal Developer Portal so on-call rotations and dependency owners are discoverable from one place. Pulled service metadata from our existing service.yaml files; added a small Next.js route `/teams/fraud-platform`.\n\nThis was off my normal area but the Platform Eng team was bandwidth-limited and Sarah (their EM) asked if I'd help land it. Worth doing — half the incidents in the last quarter wasted 10+ minutes on 'who owns this'."
+  }
+]

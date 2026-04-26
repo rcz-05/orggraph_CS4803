@@ -1,0 +1,61 @@
+[
+  {
+    "id": "jira:FRAUD-44",
+    "key": "FRAUD-44",
+    "type": "Epic",
+    "title": "Maintain fraud-scoring system reliability through Q4 holiday traffic",
+    "status": "Done",
+    "assignee": "rayan",
+    "reporter": "jonas",
+    "created": "2025-09-01",
+    "resolved": "2026-01-15",
+    "description": "Own end-to-end reliability of the fraud-scoring system through the Q4 traffic peak (Black Friday → Boxing Day → Lunar New Year). 18-month-old system with no major incidents in that window. Includes capacity planning, on-call coverage, runbook updates, and the Stripe API migration (FRAUD-89) which lands mid-window without downtime.",
+    "comments": [
+      {"author": "jonas", "body": "This is a continuation of what Rayan has been doing solo for ~18 months. Tagging FRAUD-44 to make the work visible for the next promo cycle — none of this shows up in commit-count metrics.", "date": "2025-09-01"},
+      {"author": "rayan", "body": "Q4 wrap: 0 P1s, 1 P2 (resolved in 22 min), 0 customer-visible outages. Stripe migration cut over on 11/04 with zero downtime. $2M+/day stable.", "date": "2026-01-15"}
+    ]
+  },
+  {
+    "id": "jira:FRAUD-89",
+    "key": "FRAUD-89",
+    "type": "Story",
+    "title": "Migrate legacy payment processor to Stripe Payment Intents",
+    "status": "Done",
+    "assignee": "rayan",
+    "reporter": "rayan",
+    "created": "2025-08-12",
+    "resolved": "2025-11-04",
+    "description": "Replace the legacy in-house payment processor with Stripe's Payment Intents API. Maintain compatibility with existing fraud-rules engine. Zero-downtime cutover required.",
+    "comments": [
+      {"author": "rayan", "body": "Wrote up the migration plan in docs/rfcs/0011-stripe-migration.md. Two-phase: dual-write window, then shadow-compare, then cut. Estimated 8 weeks; landed in 9.", "date": "2025-08-15"},
+      {"author": "priya", "body": "Want to make sure the fraud-rules eval still hits <50ms p99 after the migration. Let's add a perf gate to the cutover criteria.", "date": "2025-09-22"},
+      {"author": "rayan", "body": "Added. Cutover criteria now includes p99 fraud-rule eval ≤ 50ms over a rolling 1-hour window before we flip the flag.", "date": "2025-09-23"}
+    ]
+  },
+  {
+    "id": "jira:FRAUD-127",
+    "key": "FRAUD-127",
+    "type": "Task",
+    "title": "Partition transactions table by month",
+    "status": "In Progress",
+    "assignee": "rayan",
+    "reporter": "rayan",
+    "created": "2025-12-19",
+    "description": "Follow-up from PR #1340. Composite index on (merchant_id, created_at) is growing fast at current volume. Plan: monthly partitioning with a rolling 13-month window; older partitions archived to cold storage. Keeps hot read path fast while bounding index size."
+  },
+  {
+    "id": "jira:DEVPORTAL-22",
+    "key": "DEVPORTAL-22",
+    "type": "Story",
+    "title": "Surface Fraud Platform services in Developer Portal",
+    "status": "Done",
+    "assignee": "rayan",
+    "reporter": "sarah-chen",
+    "created": "2026-01-28",
+    "resolved": "2026-02-11",
+    "description": "Cross-team contribution. Platform Eng was bandwidth-limited; Rayan picked this up to unblock the Q1 portal launch. Adds fraud-scoring-api, rules-engine, payment-gateway, ledger-sync to the internal catalog with on-call info and dependency map.",
+    "comments": [
+      {"author": "sarah-chen", "body": "Thanks for picking this up! Saved my team about a week.", "date": "2026-02-11"}
+    ]
+  }
+]

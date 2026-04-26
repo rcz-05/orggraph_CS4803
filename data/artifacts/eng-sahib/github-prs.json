@@ -1,0 +1,41 @@
+[
+  {
+    "id": "github:pr-489",
+    "repo": "platform/api-gateway",
+    "number": 489,
+    "title": "Migrate API gateway to OpenTelemetry tracing",
+    "state": "merged",
+    "author": "sahib",
+    "merged_at": "2025-12-04T10:45:00Z",
+    "files_changed": 31,
+    "additions": 1620,
+    "deletions": 412,
+    "description": "Replaces our home-grown tracing layer with OpenTelemetry across the shared API gateway. Adds context-propagation, sampling config per route, and a tail-based sampler for slow requests. Latency overhead well under 1ms p99. Zero impact to the fraud-scoring path (rayan reviewed for the latency budget). Migrated 23 downstream services off the old SDK in follow-up PRs."
+  },
+  {
+    "id": "github:pr-512",
+    "repo": "platform/dev-tools",
+    "number": 512,
+    "title": "New CLI: `platform-cli scaffold` for service bootstrapping",
+    "state": "merged",
+    "author": "sahib",
+    "merged_at": "2026-01-23T13:14:55Z",
+    "files_changed": 42,
+    "additions": 2104,
+    "deletions": 0,
+    "description": "Internal CLI that scaffolds a new service from our golden-path template (TypeScript, OTel, CI/CD wired, Helm chart, on-call config stub). Cuts time-to-first-deploy for a new service from ~2 days to ~30 min. Adopted by 5 teams in the first two weeks."
+  },
+  {
+    "id": "github:pr-538",
+    "repo": "platform/ci-pipeline",
+    "number": 538,
+    "title": "Parallelize test stages and cache node_modules between jobs",
+    "state": "merged",
+    "author": "sahib",
+    "merged_at": "2026-02-14T11:00:00Z",
+    "files_changed": 9,
+    "additions": 187,
+    "deletions": 64,
+    "description": "Reduced average CI wall time across the monorepo from 18 min → 7 min. Parallelized test stages by package, added a shared node_modules cache keyed on the root lockfile hash, and dropped a redundant lint job that was duplicating work the pre-commit hook already does."
+  }
+]

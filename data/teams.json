@@ -1,0 +1,157 @@
+[
+  {
+    "slug": "fraud-platform",
+    "name": "Fraud Platform",
+    "mission": "Protect every transaction. We own the real-time fraud-scoring path that gates ~$2M/day in payments across 14 markets — fast enough to add <50ms p99, smart enough to learn from every chargeback, and reliable enough to fail safe when upstream payment processors hiccup.",
+    "techStack": ["TypeScript", "Node.js", "Postgres", "Kafka", "Stripe", "Redis"],
+    "projectTypes": ["Backend", "Reliability", "Payments"],
+    "currentProjects": [
+      {
+        "title": "Q1 transactions table partitioning",
+        "description": "Partitioning the high-volume transactions table by month to keep query latency flat as data grows. Covers planner-stat refresh cadence and a zero-downtime cutover plan."
+      },
+      {
+        "title": "Real-time fraud-rule auto-tuning",
+        "description": "Replacing manual rule-threshold tweaks with an offline learner that proposes new thresholds from the last 14 days of chargebacks. Human-in-the-loop approval before deploy."
+      },
+      {
+        "title": "Webhook router consolidation",
+        "description": "Merging three legacy webhook handlers (Stripe, Adyen, in-house) behind one event-bus consumer with idempotency-key replay protection."
+      }
+    ],
+    "ownedServices": [
+      "fraud-rules-engine",
+      "transactions-api",
+      "webhook-router",
+      "kill-switch-service",
+      "chargeback-ingestor"
+    ],
+    "skillGaps": [
+      "Postgres index optimization & partitioning",
+      "Idempotency / replay protection",
+      "Stripe / payment-processor integrations",
+      "Zero-downtime cutover playbooks"
+    ],
+    "manager": { "name": "Jonas Beyer", "engineerId": "eng-jonas" }
+  },
+  {
+    "slug": "data-infra",
+    "name": "Data Infrastructure",
+    "mission": "The team that keeps the company's analytics + ML pipelines fed. We move billions of events per day from product systems into the warehouse, run the offline feature store, and operate the model-serving layer the recommendations + risk teams build on.",
+    "techStack": ["Python", "Spark", "Airflow", "Postgres", "Kafka", "Snowflake"],
+    "projectTypes": ["Data infra", "ML platform", "Backend"],
+    "currentProjects": [
+      {
+        "title": "Feature-store v2 migration",
+        "description": "Cutting over from the legacy in-house feature store to a Tecton-style serving layer with point-in-time correctness for training/inference parity."
+      },
+      {
+        "title": "LLM eval harness for product surfaces",
+        "description": "A shared offline eval pipeline so every team shipping an LLM feature (search, summarization, fraud explanations) gets calibrated regression scores, not vibes."
+      }
+    ],
+    "ownedServices": [
+      "warehouse-loader",
+      "feature-store-online",
+      "feature-store-offline",
+      "model-registry",
+      "airflow-prod"
+    ],
+    "skillGaps": [
+      "LLM systems & retrieval pipelines",
+      "Frontend tooling for internal data UIs",
+      "Cost-optimization for Spark workloads"
+    ],
+    "manager": { "name": "Priya Menon", "engineerId": "eng-priya" }
+  },
+  {
+    "slug": "platform-experience",
+    "name": "Platform Experience",
+    "mission": "Make the engineering platform feel obvious. We build the internal CLIs, dashboards, and CI scaffolding every other team touches daily — measured on how rarely you have to think about us.",
+    "techStack": ["TypeScript", "React", "Next.js", "Go", "Kubernetes"],
+    "projectTypes": ["Internal tooling", "DX automation", "Frontend"],
+    "currentProjects": [
+      {
+        "title": "Service template generator",
+        "description": "A `og service new` CLI that scaffolds a service with logging, metrics, tracing, CI, and a working /healthz route — wired to the platform's golden defaults."
+      },
+      {
+        "title": "Internal portal redesign",
+        "description": "Rewriting the internal developer portal in Next.js with a design-system audit so service catalogs, runbooks, and on-call rotations live in one place."
+      }
+    ],
+    "ownedServices": [
+      "developer-portal",
+      "og-cli",
+      "ci-templates",
+      "service-catalog-api"
+    ],
+    "skillGaps": [
+      "Design-system maintenance for internal tools",
+      "Go service templates & golden paths",
+      "DX research with engineer customers"
+    ],
+    "manager": { "name": "Sahib K.", "engineerId": "eng-sahib" }
+  },
+  {
+    "slug": "payments-architecture",
+    "name": "Payments Architecture",
+    "mission": "The cross-team architecture guild for everything that moves money. We own the long-horizon roadmap — multi-region failover, payment-processor abstraction, fraud-pipeline observability — and the RFC process that keeps Fraud Platform, Risk, and Ledger pulling the same direction.",
+    "techStack": ["TypeScript", "Postgres", "Stripe", "Kafka", "Redis", "OpenTelemetry"],
+    "projectTypes": ["Backend", "Architecture", "Payments"],
+    "currentProjects": [
+      {
+        "title": "Multi-region payment-router design",
+        "description": "RFC + reference implementation for a region-aware payment router that fails over within 30s of a regional Stripe outage, with deterministic idempotency-key handling across regions so duplicate retries don't re-charge."
+      },
+      {
+        "title": "Fraud-pipeline observability spec",
+        "description": "Cross-team observability standard for the end-to-end fraud-scoring path: trace-id propagation through webhook → router → rules-engine, p99 latency budgets per hop, and a shared Grafana board owned by this team."
+      }
+    ],
+    "ownedServices": [
+      "payment-router-v2",
+      "processor-shim",
+      "payments-rfc-process",
+      "payments-observability-spec",
+      "cutover-runbooks"
+    ],
+    "skillGaps": [
+      "Cross-team RFC authorship",
+      "Idempotency / replay protection patterns",
+      "Zero-downtime cutover playbooks",
+      "In-process latency budgeting"
+    ],
+    "manager": { "name": "Rayan Castilla", "engineerId": "eng-rayan" }
+  },
+  {
+    "slug": "security-platform",
+    "name": "Security Platform",
+    "mission": "Make our web surfaces hard to attack and easy to keep that way. We own client-side security posture — strict CSP, supply-chain integrity, auth-cookie hardening — and the frontend security review process that keeps adjacent teams from re-introducing the same classes of bugs.",
+    "techStack": ["TypeScript", "React", "Next.js", "OWASP", "Snyk", "CSP"],
+    "projectTypes": ["Frontend", "Security"],
+    "currentProjects": [
+      {
+        "title": "Strict CSP rollout — internal admin",
+        "description": "Extending the strict nonce-based CSP from user-facing surfaces to the internal admin tooling. Coordinating with platform-experience on the dev-portal migration and with auth-team on the admin sign-in flow."
+      },
+      {
+        "title": "Third-party-script supply-chain audit",
+        "description": "Quarterly review of every pinned third-party script: SRI hash drift, vendor security posture, CDN ownership. Includes the build-step that auto-emits SRI hashes and the cron that alerts on drift."
+      }
+    ],
+    "ownedServices": [
+      "csp-policy-service",
+      "sri-build-step",
+      "auth-cookie-middleware",
+      "frontend-sec-checklist"
+    ],
+    "skillGaps": [
+      "Strict CSP / nonce strategy",
+      "Supply-chain audit (SRI, dependency review)",
+      "CSRF token rotation patterns",
+      "Cross-team frontend security review"
+    ],
+    "manager": { "name": "Tisha P.", "engineerId": "eng-tisha" }
+  }
+]

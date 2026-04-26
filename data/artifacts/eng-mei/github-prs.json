@@ -1,0 +1,28 @@
+[
+  {
+    "id": "github:pr-2230",
+    "repo": "growth/web-platform",
+    "number": 2230,
+    "title": "Replace virtualized list with windowing + intersection observer",
+    "state": "merged",
+    "author": "mei",
+    "merged_at": "2026-02-26T10:00:00Z",
+    "files_changed": 14,
+    "additions": 392,
+    "deletions": 188,
+    "description": "The experiments-list page was rendering 1k+ rows up-front and stuttering on scroll. Replaced react-window with a custom windowing impl backed by IntersectionObserver. Scroll FPS on a M1 Air went 22 → 60. Memory drop ~40MB on a full list. Tisha reviewed."
+  },
+  {
+    "id": "github:pr-2271",
+    "repo": "growth/web-platform",
+    "number": 2271,
+    "title": "Add new merchant onboarding flow (frontend)",
+    "state": "merged",
+    "author": "mei",
+    "merged_at": "2025-11-26T17:30:00Z",
+    "files_changed": 22,
+    "additions": 980,
+    "deletions": 14,
+    "description": "Frontend for the new merchant onboarding flow. Multi-step form, optimistic submission, retry-on-502 (per Rayan's note in #frontend-help — fraud-scoring service has a cold-start issue)."
+  }
+]

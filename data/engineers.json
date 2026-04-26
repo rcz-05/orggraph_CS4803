@@ -1,0 +1,98 @@
+[
+  {
+    "id": "eng-rayan",
+    "name": "Rayan Castilla",
+    "title": "Senior Software Engineer",
+    "team": "fraud-platform",
+    "yearsAtCompany": 4,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": ["AI infra", "Fraud systems", "Developer experience"],
+      "growthGoals": ["Tech lead role", "Cross-team architecture work"]
+    }
+  },
+  {
+    "id": "eng-tisha",
+    "name": "Tisha P.",
+    "title": "Software Engineer II",
+    "team": "growth-platform",
+    "yearsAtCompany": 2,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": ["Frontend systems", "Design engineering"],
+      "growthGoals": ["Move into AI tooling"]
+    }
+  },
+  {
+    "id": "eng-arnav",
+    "name": "Arnav S.",
+    "title": "Backend Engineer",
+    "team": "data-infra",
+    "yearsAtCompany": 3,
+    "preferences": {
+      "openToTransfer": false,
+      "interests": ["Distributed systems", "Postgres internals"],
+      "growthGoals": ["Become a staff engineer"]
+    }
+  },
+  {
+    "id": "eng-sahib",
+    "name": "Sahib K.",
+    "title": "Full-stack Engineer",
+    "team": "platform-experience",
+    "yearsAtCompany": 2,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": ["Internal tooling", "DX automation"],
+      "growthGoals": ["Mentorship", "Lead a small team"]
+    }
+  },
+  {
+    "id": "eng-priya",
+    "name": "Priya Menon",
+    "title": "Senior ML Engineer",
+    "team": "data-infra",
+    "yearsAtCompany": 5,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": ["LLM systems", "Recommendation infra"],
+      "growthGoals": ["Move into applied AI org"]
+    }
+  },
+  {
+    "id": "eng-jonas",
+    "name": "Jonas Beyer",
+    "title": "Staff Engineer",
+    "team": "fraud-platform",
+    "yearsAtCompany": 7,
+    "preferences": {
+      "openToTransfer": false,
+      "interests": ["System reliability", "Incident response"],
+      "growthGoals": ["Principal engineer track"]
+    }
+  },
+  {
+    "id": "eng-mei",
+    "name": "Mei Tanaka",
+    "title": "Frontend Engineer",
+    "team": "growth-platform",
+    "yearsAtCompany": 1,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": ["React performance", "Design systems"],
+      "growthGoals": ["Tech lead within 2 years"]
+    }
+  },
+  {
+    "id": "eng-david",
+    "name": "David Okonkwo",
+    "title": "Engineer",
+    "team": "platform-experience",
+    "yearsAtCompany": 1,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": ["Build systems", "CI/CD", "Developer productivity"],
+      "growthGoals": ["Move into infra org"]
+    }
+  }
+]

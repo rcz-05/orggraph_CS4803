@@ -1,0 +1,45 @@
+[
+  {
+    "id": "github:review-2089",
+    "repo": "payments/fraud-platform",
+    "pr_number": 1267,
+    "pr_title": "Add new merchant onboarding flow",
+    "pr_author": "mei",
+    "reviewer": "rayan",
+    "review_state": "changes_requested",
+    "review_summary": "Mostly thoughtful but flagged a race condition between the merchant-create event and the first fraud-rule evaluation. Walked Mei through the event-ordering invariant we rely on and pointed at the regression test in `tests/integration/onboarding_test.py`. Reviewed in 4 rounds before approving.",
+    "exemplar_comment": "the issue here is that the merchant-create event is fire-and-forget but the fraud-rule evaluator assumes the merchant row exists. happy path works because the db write is fast, but under load you'll see ~0.3% of the first transactions skip rule eval entirely. easiest fix is to gate eval on a successful merchant-create ack, not just the event emit."
+  },
+  {
+    "id": "github:review-2156",
+    "repo": "payments/fraud-platform",
+    "pr_number": 1322,
+    "pr_title": "Refactor rules-engine evaluation to async",
+    "pr_author": "david",
+    "reviewer": "rayan",
+    "review_state": "approved",
+    "review_summary": "Good first significant PR from David. Approved with two minor suggestions on error-handling. Spent ~30 min in a follow-up call walking through how the rules-engine fits into the broader fraud platform — David is newer and I wanted to make sure he had the mental model, not just the code change.",
+    "exemplar_comment": "this is solid. one small thing: when a rule evaluator throws, we currently swallow it and default to 'allow' — that's almost never what we want for a fraud system. consider a circuit-breaker per-rule that escalates to manual-review after N consecutive failures. doesn't have to be in this PR but worth a follow-up ticket."
+  },
+  {
+    "id": "github:review-2201",
+    "repo": "platform/api-gateway",
+    "pr_number": 489,
+    "pr_title": "Migrate API gateway to OpenTelemetry tracing",
+    "pr_author": "sahib",
+    "reviewer": "rayan",
+    "review_state": "approved",
+    "review_summary": "Cross-team review. Sahib's PR added OTel tracing to the shared API gateway. Reviewed for impact on the fraud-scoring path latency budget (we have a strict <50ms p99 add). Confirmed no regression after looking at the trace export sampling config."
+  },
+  {
+    "id": "github:review-2298",
+    "repo": "payments/fraud-platform",
+    "pr_number": 1389,
+    "pr_title": "Schema change: split transaction-attempts table",
+    "pr_author": "tisha",
+    "reviewer": "rayan",
+    "review_state": "changes_requested",
+    "review_summary": "Tisha was on rotation from Growth Platform helping us land a schema split. Pushed back on the migration strategy — the original plan would have held a long lock on `transactions`. Suggested an online migration via `pg_repack` instead. Tisha hadn't done a migration of this size before; we paired on it for ~1.5 hrs to land a safer version.",
+    "exemplar_comment": "the lock-time estimate here assumes a quiet window, but we don't have one — fraud-scoring is hot 24/7. let's do this online. happy to pair on the pg_repack setup if you haven't used it before."
+  }
+]

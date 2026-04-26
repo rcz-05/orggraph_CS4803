@@ -1,0 +1,30 @@
+[
+  {
+    "id": "jira:DATAINFRA-78",
+    "key": "DATAINFRA-78",
+    "type": "Epic",
+    "title": "Postgres 16 upgrade across data-infra fleet",
+    "status": "In Progress",
+    "assignee": "arnav",
+    "reporter": "arnav",
+    "description": "Owning the multi-quarter upgrade from PG 14 → 16 across the data-infra fleet. Includes extension compatibility audit (pgvector, pg_partman, pg_repack), logical-replication-driven cutover, and per-tenant validation. Wrote the upgrade RFC and runbook."
+  },
+  {
+    "id": "jira:DATAINFRA-104",
+    "key": "DATAINFRA-104",
+    "type": "Story",
+    "title": "Investigate query planner regression on partitioned tables",
+    "status": "Done",
+    "assignee": "arnav",
+    "description": "Filed by the analytics team — query plans on the partitioned events table were occasionally choosing the wrong partition. Root cause was a stale histogram on the partition-key column after a bulk load; planner fell back to a sequential scan. Fix: cron-based ANALYZE on the affected partition + a lightweight planner hint where it matters."
+  },
+  {
+    "id": "jira:DATAINFRA-141",
+    "key": "DATAINFRA-141",
+    "type": "Task",
+    "title": "Document our consistency model for cross-region reads",
+    "status": "Done",
+    "assignee": "arnav",
+    "description": "Wrote up the consistency model for cross-region reads (eventual within 200ms p99, with opt-in strong consistency via primary routing). Doc has been cited in 4 design reviews this quarter."
+  }
+]
