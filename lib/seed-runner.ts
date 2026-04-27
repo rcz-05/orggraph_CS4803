@@ -5,9 +5,9 @@
  *   npm run seed:profiles            # all engineers
  *   npm run seed:profiles eng-rayan  # just one
  *
- * Requires `OPENROUTER_API_KEY` in the environment (set in `.env.local`). Per
- * ARCHITECTURE.md DR-004 the demo never calls profile generation live — the
- * committed `data/profiles.json` is what the UI renders.
+ * Requires `GOOGLE_GENERATIVE_AI_API_KEY` in the environment (set in
+ * `.env.local`). Per ARCHITECTURE.md DR-004 the demo never calls profile
+ * generation live — the committed `data/profiles.json` is what the UI renders.
  */
 
 import { promises as fs } from "node:fs";
@@ -16,7 +16,7 @@ import path from "node:path";
 import { ProfileSchema, EngineerSchema, type Engineer, type Profile } from "./schemas";
 import { generateProfile } from "./profile-pipeline";
 
-const MODEL_LABEL = "openrouter/free";
+const MODEL_LABEL = "gemini-2.5-flash";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "data");
@@ -30,9 +30,9 @@ async function loadEngineers(): Promise<Engineer[]> {
 }
 
 async function main() {
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     console.error(
-      "OPENROUTER_API_KEY is not set. Add it to .env.local."
+      "GOOGLE_GENERATIVE_AI_API_KEY is not set. Add it to .env.local. Get a free key at https://aistudio.google.com/apikey."
     );
     process.exit(1);
   }

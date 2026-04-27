@@ -19,7 +19,7 @@ This is the **product application** repo for OrgGraph. The marketing landing pag
 | Feature | Surface | What it does |
 | --- | --- | --- |
 | **Engineer profiles** | `/app/profile`, `/app/profile/[id]`, `/app/profile/[id]/skill/[index]`, `/app/profile/[id]/project/[index]` | Auto-generates an evidence-based profile from seeded GitHub/Jira/Slack artifacts. Skills and project themes link to detail pages. Engineers edit draft preferences, then publishing locks the profile. In Manager view, candidate profiles show a Payments Architecture match box. |
-| **Demo onboarding** | `/app/demo`, `/app/loading`, `/app/demo/profile` | Mock new-user flow for connecting GitHub, Jira, and Slack. The user must connect at least one tool, then sees a 2m34s non-uniform loading screen whose progress jumps only by 10% or 20%, and lands on a generated Arnav Chintawar profile using the same profile UI as `/app/profile`. These routes force Engineer view. |
+| **Demo onboarding** | `/app/demo`, `/app/loading`, `/app/demo/profile` | Mock new-user flow for connecting GitHub, Jira, and Slack. The user must connect at least one tool, then sees a 12s loading screen (compressed from the original 2m34s pipeline for live-demo viability) whose progress jumps in 10% or 20% increments across 8 stages, and lands on a generated Arnav Chintawar profile using the same profile UI as `/app/profile`. These routes force Engineer view. |
 | **Talent search** | `/app/search` | Manager-only free-text search ("fraud detection", "React design systems"). AI-ranks seeded profiles against the query, shows match score, matched skills, and transfer-interest. UI filters support **Open to transfer only** and minimum score thresholds. Engineer view is redirected away from this route. |
 | **Team portal** | `/app/teams`, `/app/teams/[slug]`, `/app/teams/[slug]/projects/[index]` | Role-aware team browsing. Engineer view highlights **Best fit teams** from Rayan's profile and supports signaling interest with intent + message. Manager view swaps "My profile" for **My team**, makes Payments Architecture mission/projects editable, and exposes detailed project pages. |
 | **Interest center** | `/app/interests` | Role-aware interest tracking. Engineer view shows Rayan's sent interests and follow-ups. Manager view shows the Payments Architecture inbox with read/unread, star, follow-up, and priority sorting. |
@@ -34,13 +34,13 @@ npm run dev          # http://localhost:3000/app
 npm run build        # production build (type-check + bundle)
 ```
 
-For LLM features (search ranking + the empty-state "Generate my profile" button) set `OPENROUTER_API_KEY` in `.env.local`:
+For LLM features (search ranking + the empty-state "Generate my profile" button) set `GOOGLE_GENERATIVE_AI_API_KEY` in `.env.local`:
 
 ```bash
-OPENROUTER_API_KEY=sk-or-v1-...
+GOOGLE_GENERATIVE_AI_API_KEY=AIza...
 ```
 
-The app uses the [Vercel AI SDK](https://ai-sdk.dev/) with [`@openrouter/ai-sdk-provider`](https://www.npmjs.com/package/@openrouter/ai-sdk-provider), routing both default (profile generation) and fast (search ranking) calls through OpenRouter's `openrouter/free` meta-router — which auto-picks a free model that supports structured outputs.
+Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The app uses the [Vercel AI SDK](https://ai-sdk.dev/) with [`@ai-sdk/google`](https://www.npmjs.com/package/@ai-sdk/google), routing both default (profile generation) and fast (search ranking) calls through `gemini-2.5-flash`. Free tier is ~250 requests/day, ~10 RPM — plenty for the demo.
 
 To regenerate the cached profiles from the seeded artifacts:
 
@@ -53,7 +53,7 @@ The committed `data/profiles.json` is the cache the demo reads. Per `docs/ARCHIT
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · Tailwind v4 · shadcn/ui primitives · `@base-ui/react` · framer-motion · lucide-react · zod · Vercel AI SDK v6 · OpenRouter
+Next.js 16 (App Router) · React 19 · Tailwind v4 · shadcn/ui primitives · `@base-ui/react` · framer-motion · lucide-react · zod · Vercel AI SDK v6 · Google Gemini 2.5 Flash
 
 No database, no auth, no real GitHub/Jira/Slack OAuth — all data is seeded JSON in `data/`. This is intentional per the PRD; the MVP is a demo-quality slice, not enterprise SaaS.
 
@@ -73,7 +73,7 @@ components/
   search/                     # SearchPageClient, ResultRow, MatchScoreBadge
   teams/                      # TeamCard, TeamFilters, SignalInterestButton, RecentInterestPanel
 lib/
-  ai.ts                       # OpenRouter client + model id
+  ai.ts                       # Google Gemini client + model id
   data.ts                     # JSON loaders
   schemas.ts                  # zod contracts (Profile, Engineer, Team, SearchResult)
   signals.ts                  # session-scoped interest-signal helpers (writes outside project tree)

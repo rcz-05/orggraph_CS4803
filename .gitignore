@@ -9,6 +9,11 @@ docs/_private/
 .vscode/
 *.swp
 
+# --- Claude Code internal (keep settings.json but not lockfiles/transcripts) ---
+.claude/scheduled_tasks.lock
+.claude/projects/
+.claude/transcripts/
+
 # --- Node / Next.js ---
 node_modules/
 .next/

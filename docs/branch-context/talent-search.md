@@ -56,13 +56,13 @@ The seeded engineer for the fraud-detection story is in `data/engineers.json` (c
 ## Suggested order of work
 1. Stub `/app/search/page.tsx` with the input + a fake `useState` results list. Get the layout right.
 2. `lib/prompts/search.ts` — ranking prompt. Use `generateObject` to enforce `SearchResult[]` shape.
-3. `/api/search/route.ts` — load profiles, call OpenRouter via `lib/ai.ts`, return ranked array.
+3. `/api/search/route.ts` — load profiles, call Gemini via `lib/ai.ts`, return ranked array.
 4. Wire the page to the API. Add loading skeleton + empty state.
 5. Result row → click navigates to `/app/profile/[id]`.
 6. Latency check on the deployed preview. If > 5s, shrink the prompt (drop low-confidence skills, drop long evidence quotes, summarize profile down to ~80 tokens each).
 
 ## Gotchas
-- Use `MODEL_FAST` from `lib/ai.ts` (`openrouter/free` in the current implementation) — quality is fine for ranking and latency wins.
+- Use `MODEL_FAST` from `lib/ai.ts` (`gemini-2.5-flash` in the current implementation) — fast structured outputs, ~2s latency.
 - Rank deterministically: prompt the model to return scores 0–100 and the array sorted descending. Sort again client-side as a safety net.
 - Watch for the model padding scores when no candidates fit — handle empty results gracefully ("No internal candidates match yet — try broadening your query").
 - Cap context: pass profiles as compact JSON, not pretty-printed.

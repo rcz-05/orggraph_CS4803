@@ -13,17 +13,21 @@ import {
 import { CaveatHeading } from "@/components/shared/caveat-heading";
 import { Eyebrow } from "@/components/shared/eyebrow";
 
-const DURATION_MS = 154_000;
+// Demo-tuned duration — full-length 2m34s pipeline compressed ~13x so judges
+// see the visual rhythm of all 8 stages without a dead-air stretch.
+// Original 154_000ms value is preserved in git history if a longer
+// presentation is ever needed.
+const DURATION_MS = 12_000;
 
 const STAGES = [
   { at: 0, progress: 0, label: "Connecting to source APIs", icon: <GitPullRequest className="h-4 w-4" /> },
-  { at: 11_000, progress: 10, label: "Reading pull requests and review comments", icon: <GitPullRequest className="h-4 w-4" /> },
-  { at: 31_000, progress: 30, label: "Mapping Jira ownership and project scope", icon: <Ticket className="h-4 w-4" /> },
-  { at: 52_000, progress: 40, label: "Finding mentoring and design signals in Slack", icon: <MessageSquare className="h-4 w-4" /> },
-  { at: 79_000, progress: 60, label: "Clustering evidence into skills and projects", icon: <Sparkles className="h-4 w-4" /> },
-  { at: 109_000, progress: 80, label: "Drafting profile summary", icon: <Sparkles className="h-4 w-4" /> },
-  { at: 137_000, progress: 90, label: "Attaching evidence snippets", icon: <CheckCircle2 className="h-4 w-4" /> },
-  { at: 154_000, progress: 100, label: "Profile ready", icon: <CheckCircle2 className="h-4 w-4" /> },
+  { at: 800, progress: 10, label: "Reading pull requests and review comments", icon: <GitPullRequest className="h-4 w-4" /> },
+  { at: 2_400, progress: 30, label: "Mapping Jira ownership and project scope", icon: <Ticket className="h-4 w-4" /> },
+  { at: 4_000, progress: 40, label: "Finding mentoring and design signals in Slack", icon: <MessageSquare className="h-4 w-4" /> },
+  { at: 6_100, progress: 60, label: "Clustering evidence into skills and projects", icon: <Sparkles className="h-4 w-4" /> },
+  { at: 8_500, progress: 80, label: "Drafting profile summary", icon: <Sparkles className="h-4 w-4" /> },
+  { at: 10_500, progress: 90, label: "Attaching evidence snippets", icon: <CheckCircle2 className="h-4 w-4" /> },
+  { at: 12_000, progress: 100, label: "Profile ready", icon: <CheckCircle2 className="h-4 w-4" /> },
 ];
 
 function getStage(elapsedMs: number) {
@@ -47,7 +51,7 @@ export function DemoLoading() {
         window.clearInterval(interval);
         router.push("/app/demo/profile");
       }
-    }, 1000);
+    }, 200);
 
     return () => window.clearInterval(interval);
   }, [router]);

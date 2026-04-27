@@ -52,7 +52,7 @@
 
 **Current demo implementation notes:**
 - `/app/demo` shows a mocked new-user connector step for GitHub, Jira, and Slack. At least one connector must be selected before continuing. Connector handlers are dummy functions today, with a small config surface intended for future OAuth wiring.
-- `/app/loading` simulates profile generation with a hard-coded 2m34s loading screen. It does not show a seconds countdown; progress advances in uneven timing and only jumps by 10% or 20% at a time.
+- `/app/loading` simulates profile generation with a hard-coded 12s loading screen (compressed from the original 2m34s pipeline so judges see all 8 stages without dead air). Progress advances in uneven jumps of 10% or 20% at a time.
 - `/app/demo/profile` renders the generated Arnav Chintawar profile with the same profile UI used by `/app/profile`.
 - All three demo onboarding routes force Engineer view so the flow does not inherit Manager view.
 

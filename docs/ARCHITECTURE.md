@@ -11,7 +11,7 @@
 | Animation | **framer-motion** | Used on landing — keeps motion language consistent. |
 | Icons | **lucide-react** | Same as landing. |
 | Fonts | **Geist** (sans) + **Caveat** (handwritten headings, via `@fontsource/caveat`) | Already loaded on landing; replicate. |
-| AI | **AI SDK v6** through **OpenRouter** (`@openrouter/ai-sdk-provider`) | One env var, free-router fallback for local demo. `MODEL_DEFAULT` and `MODEL_FAST` both use `openrouter/free`. |
+| AI | **AI SDK v6** through **Google Gemini** (`@ai-sdk/google`) | `MODEL_DEFAULT` and `MODEL_FAST` both use `gemini-2.5-flash`. Free tier (~250 req/day) covers the demo comfortably. |
 | Storage | **Seeded JSON** in `data/` + session-scoped temp JSON for interest signals | Demo-only — explicit per PRD. Profile/team edits live in React state. Interest actions write outside the repo under `os.tmpdir()` with the current process id so server restart resets demo data. |
 | Hosting | **Vercel** (Fluid Compute) | Same account as landing. Default Node 24 runtime, 300s function timeout. |
 | Package manager | **npm** | Lockfile (`package-lock.json`) lives at repo root. Matches the landing repo's tooling. |
@@ -27,8 +27,8 @@
                           Teams, Team inbox.
 /app/demo               → Mocked new-user connector screen for GitHub, Jira, Slack.
                           Requires at least one connected tool and forces Engineer view.
-/app/loading            → Demo loading screen. Hard-coded 154s duration, non-uniform
-                          progress jumps of exactly 10% or 20%, then redirects to /app/demo/profile.
+/app/loading            → Demo loading screen. Compressed-for-demo 12s duration with the
+                          same 8-stage rhythm as the original 2m34s flow. Redirects to /app/demo/profile.
 /app/demo/profile       → Generated Arnav Chintawar profile using the same ProfileView
                           and PreferencesEditor UI as the normal profile page.
 /app/profile            → Logged-in engineer's own profile (Feature 1 — generate, edit, publish)
@@ -62,7 +62,7 @@ orggraph_CS4803/
 │   │   ├── demo/
 │   │   │   ├── page.tsx          # mocked connector onboarding
 │   │   │   └── profile/page.tsx  # generated Arnav Chintawar profile
-│   │   ├── loading/page.tsx      # 154s demo loading screen
+│   │   ├── loading/page.tsx      # 12s demo loading screen (compressed from 2m34s for live demo)
 │   │   ├── profile/
 │   │   │   ├── page.tsx          # /app/profile  (own)
 │   │   │   └── [id]/page.tsx     # /app/profile/[id]
@@ -221,17 +221,12 @@ Signal data is demo-scoped in `lib/signals.ts`: seed inbox data exists for the P
 
 ### `lib/ai.ts`
 ```ts
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { google } from '@ai-sdk/google';
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
-const FREE_ROUTER = 'openrouter/free';
-
-export const MODEL_DEFAULT = openrouter.chat(FREE_ROUTER);
-export const MODEL_FAST    = openrouter.chat(FREE_ROUTER);
+export const MODEL_DEFAULT = google('gemini-2.5-flash');
+export const MODEL_FAST    = google('gemini-2.5-flash');
 ```
-Set `OPENROUTER_API_KEY` in `.env.local`.
+Set `GOOGLE_GENERATIVE_AI_API_KEY` in `.env.local` (and in Vercel project env for Production + Preview). Get a free key at https://aistudio.google.com/apikey.
 
 ### Profile generation (`/api/profile/generate`)
 - Input: `engineerId` → loads identity + all `data/artifacts/<engineerId>/*` files.
@@ -251,7 +246,7 @@ Set `OPENROUTER_API_KEY` in `.env.local`.
 ## Performance / latency
 Demo machine, 5s budget per AI call:
 - Profile generation: model-dependent; **cache the output** so we never run it live.
-- Search: one OpenRouter free-router structured-output call over the 8 committed profiles.
+- Search: one Gemini 2.5 Flash structured-output call over the 8 committed profiles.
 
 **Pre-warm and cache**: ship `data/profiles.json` already generated. Live demo only triggers Search and Team signals.
 
@@ -260,7 +255,7 @@ Add one-line entries here when product or architectural decisions are made.
 
 - **DR-001** (TBD Day 1): Marketing landing — mirror in this repo or keep the separate Vercel site? Default: keep separate, `/` redirects to landing repo URL. Owner: Rayan.
 - **DR-002**: Mock data only for MVP. No GitHub/Jira/Slack OAuth. Per PRD §5.
-- **DR-003**: Local AI calls use OpenRouter's `openrouter/free` through AI SDK v6. `OPENROUTER_API_KEY` is the required env var.
+- **DR-003**: AI calls use Google's Gemini 2.5 Flash through AI SDK v6 (`@ai-sdk/google`). `GOOGLE_GENERATIVE_AI_API_KEY` is the required env var. Switched from OpenRouter `openrouter/free` to Gemini for predictability (same model every demo run), faster latency (~2s vs ~5s), and reliable structured outputs.
 - **DR-004**: Pre-generate `data/profiles.json` — never call profile generation live during the demo.
 - **DR-005**: Role surfaces are intentionally different. Engineer view hides Talent Search and shows My Profile / Best fit teams / sent interests. Manager view shows Talent Search / My Team / team inbox.
 - **DR-006**: Interest data is process-session scoped in temp storage so demo interactions persist during a run and reset on server restart.

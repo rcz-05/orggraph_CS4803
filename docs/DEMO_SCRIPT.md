@@ -13,7 +13,7 @@
 2. Click one or more mocked connector buttons: **GitHub**, **Jira**, **Slack**.
 3. The **Continue** button stays disabled until at least one tool is connected.
 4. Continue to `/app/loading`. The loading screen has no seconds countdown. Progress advances in uneven pauses, but every jump is exactly 10% or 20%.
-5. After the hard-coded 2m34s flow, it redirects to `/app/demo/profile`, an Arnav Chintawar generated profile rendered with the same UI as `/app/profile`.
+5. After the 12s compressed flow, it redirects to `/app/demo/profile`, an Arnav Chintawar generated profile rendered with the same UI as `/app/profile`.
 
 > Note: `/app/demo`, `/app/loading`, and `/app/demo/profile` force Engineer view so this flow does not inherit Manager view from a previous demo beat.
 
@@ -68,12 +68,12 @@
 ## Lock-in
 - **Don't** edit `data/profiles.json` after this script runs cleanly twice.
 - **Don't** edit `data/teams.json` after the skill-gap overlap is confirmed.
-- **Don't** swap models in `lib/ai.ts` or change `openrouter/free` without checking structured-output behavior.
+- **Don't** swap models in `lib/ai.ts` away from `gemini-2.5-flash` without checking structured-output behavior.
 
 ## If something breaks on stage
 | Symptom | Action |
 | --- | --- |
-| `/app/search` errors | Check `OPENROUTER_API_KEY` in `.env.local`. Pivot to: open the cached `/app/profile/eng-rayan` directly. |
+| `/app/search` errors | Check `GOOGLE_GENERATIVE_AI_API_KEY` in `.env.local` (or Vercel env). Pivot to: open the cached `/app/profile/eng-rayan` directly. |
 | Search latency >5s | Refresh the page; first call after a cold start is slowest. |
 | Signal interest 500 | Restart dev server to reset process-scoped temp signal state. Recover by demoing the seeded `/app/interests` rows. |
 | Wi-Fi flake | Switch to mobile hotspot. Worst case: play `public/demo-fallback.mp4` if it was recorded. |
