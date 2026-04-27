@@ -57,7 +57,22 @@
 
 > Closing line: *"Two-sided discovery. The manager finds the engineer; the engineer finds the team. Same evidence, same product, no recruiter in the loop."*
 
-## Beat 4 — Manager sees the signal land (3:00 – 3:25, optional encore)
+## Beat 4 — Live GitHub OAuth (the finale, ~30s)
+
+> This is the wow moment. Only run on the **production URL** (`https://orggraph-eight.vercel.app`) — local dev cannot complete the round-trip because only the production callback is registered with the OAuth app.
+
+17. From `/app/profile` (Engineer view, Rayan's profile), point at the peach **"Connect your real GitHub"** banner above the seeded profile.
+18. Say something like: *"Everything you just saw runs on simulated data so we can demo offline. But this isn't a stub — let's connect a real engineer."*
+19. Click **Connect GitHub**.
+20. GitHub's official authorize screen appears. Read the scope aloud: *"Read your profile and public repos. Nothing else."* Click **Authorize**.
+21. The page returns to `/app/profile` with the **Live evidence · GitHub** panel rendered: avatar, recent repos, recent commits — all real, all live.
+22. Read the most recent commit message aloud — ideally it's the OrgGraph commit you pushed today. Punchline: *"Two hours ago. This is the invisible work, made visible."*
+
+> Closing line for the deck: *"In a real engineering org, this is what makes promotion fairness possible — evidence that doesn't depend on whether you remember to advocate for yourself."*
+
+**Pre-stage prep:** in a private window on the demo laptop, click Connect once before showtime so GitHub remembers you and the consent screen is a one-click "Continue" rather than a full review. The 24h cookie also means a second pre-stage click keeps the session warm for the actual demo without re-authorizing.
+
+## Beat 5 — Manager sees the signal land (3:30 – 3:55, optional encore)
 13. Top-right navbar: switch to **Manager view**. If you are on an engineer-only route, it redirects to the correct manager surface.
 14. Open **My team** (`/app/teams/payments-architecture`).
 15. Mission and current project title/description are editable session-only. Each project still links to its project detail page, where manager-owned project details are editable.
@@ -77,3 +92,5 @@
 | Search latency >5s | Refresh the page; first call after a cold start is slowest. |
 | Signal interest 500 | Restart dev server to reset process-scoped temp signal state. Recover by demoing the seeded `/app/interests` rows. |
 | Wi-Fi flake | Switch to mobile hotspot. Worst case: play `public/demo-fallback.mp4` if it was recorded. |
+| GitHub OAuth fails (consent screen errors / callback timeout) | Don't stall. Skip Beat 4 entirely — the rest of the demo stands on its own. The `/app/profile` page renders the seeded profile cleanly even when the GitHub flow errors (banner just shows an inline retry message). |
+| GitHub shows a stale "Reauthorize" wall | You probably revoked the OAuth app. Re-authorize from the consent screen as normal — it's the same one-click flow. |
