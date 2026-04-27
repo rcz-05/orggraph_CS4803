@@ -25,6 +25,12 @@
 /app                    → Role-aware dashboard hub. Engineer: My profile, Teams,
                           Sent interests. Manager: My team, Talent search,
                           Teams, Team inbox.
+/app/demo               → Mocked new-user connector screen for GitHub, Jira, Slack.
+                          Requires at least one connected tool and forces Engineer view.
+/app/loading            → Demo loading screen. Hard-coded 154s duration, non-uniform
+                          progress jumps of exactly 10% or 20%, then redirects to /app/demo/profile.
+/app/demo/profile       → Generated Arnav Chintawar profile using the same ProfileView
+                          and PreferencesEditor UI as the normal profile page.
 /app/profile            → Logged-in engineer's own profile (Feature 1 — generate, edit, publish)
 /app/profile/[id]       → View any engineer's profile (used by Feature 2 results)
 /app/profile/[id]/skill/[index]
@@ -43,7 +49,7 @@
                           PATCH — read/star/follow-up updates for interest records.
 ```
 
-For the demo we **fake auth** with a session cookie that picks an engineer ID from the seed (default: `eng-rayan`). The role switcher (`Engineer view ↔ Manager view`) also handles unsafe route transitions: switching from Manager search to Engineer redirects to `/app/teams`, and switching from Engineer profile to Manager redirects to `/app/teams/payments-architecture`.
+For the demo we **fake auth** with a session cookie that picks an engineer ID from the seed (default: `eng-rayan`). The role switcher (`Engineer view ↔ Manager view`) also handles unsafe route transitions: switching from Manager search to Engineer redirects to `/app/teams`, and switching from Engineer profile to Manager redirects to `/app/teams/payments-architecture`. The new-user demo routes (`/app/demo`, `/app/loading`, `/app/demo/profile`) set the role cookie back to Engineer view so the funnel is stable even if the presenter was previously in Manager view.
 
 ## Folder layout
 ```
@@ -53,6 +59,10 @@ orggraph_CS4803/
 │   ├── app/
 │   │   ├── layout.tsx            # in-app shell (sidebar + topbar + role switch)
 │   │   ├── page.tsx              # /app dashboard hub
+│   │   ├── demo/
+│   │   │   ├── page.tsx          # mocked connector onboarding
+│   │   │   └── profile/page.tsx  # generated Arnav Chintawar profile
+│   │   ├── loading/page.tsx      # 154s demo loading screen
 │   │   ├── profile/
 │   │   │   ├── page.tsx          # /app/profile  (own)
 │   │   │   └── [id]/page.tsx     # /app/profile/[id]
@@ -71,6 +81,7 @@ orggraph_CS4803/
 ├── components/
 │   ├── ui/                       # shadcn primitives (button, card, input, badge, separator)
 │   ├── shell/                    # navbar, sidebar, role switcher, topbar
+│   ├── demo/                     # DemoConnectors, DemoLoading, Engineer-view guard
 │   ├── interests/                # InterestCenter
 │   ├── profile/                  # ProfileView, PreferencesEditor, detail pages, ManagerMatchCard
 │   ├── search/                   # SearchPageClient, ResultRow, MatchScoreBadge
@@ -85,10 +96,10 @@ orggraph_CS4803/
 │   ├── schemas.ts                # zod schemas: Profile, SearchResult, Team
 │   └── seed-runner.ts            # one-shot: regenerate all profiles from artifacts → data/profiles.json
 ├── data/
-│   ├── engineers.json            # 8–12 engineers, basic identity
+│   ├── engineers.json            # seeded engineers, including demo Arnav Chintawar
 │   ├── teams.json                # 3–4 teams (PRD says 2–3 is enough for demo)
 │   ├── artifacts/<engineerId>/   # mock GitHub PRs, Jira issues, Slack snippets per engineer
-│   └── profiles.json             # generated profiles (committed for demo reliability)
+│   └── profiles.json             # generated profiles, including demo Arnav Chintawar
 ├── public/                       # logos, screenshots
 ├── docs/                         # this folder
 ├── package.json

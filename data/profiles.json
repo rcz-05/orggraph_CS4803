@@ -3,7 +3,14 @@
     "engineerId": "eng-rayan",
     "generatedAt": "2026-04-26T07:10:45.427Z",
     "published": false,
-    "techStack": ["TypeScript", "Node.js", "Postgres", "Kafka", "Stripe", "Redis"],
+    "techStack": [
+      "TypeScript",
+      "Node.js",
+      "Postgres",
+      "Kafka",
+      "Stripe",
+      "Redis"
+    ],
     "summary": "Rayan is known for safely migrating and operating high-volume payments and fraud infrastructure (zero-downtime Stripe migration, strict p99 targets, and Q4 holiday resilience) while writing the alignment artifacts and runbooks that make large cross-team changes possible. Their work emphasizes operational safety (idempotency, performance tuning, migrations), clear documentation, and mentorship through thorough reviews and pairing, with a track record of stepping in to unblock cross-team deliverables.",
     "skills": [
       {
@@ -128,7 +135,13 @@
     "engineerId": "eng-tisha",
     "generatedAt": "2026-04-26T07:42:28.549Z",
     "published": false,
-    "techStack": ["TypeScript", "React", "Next.js", "CSS", "Postgres"],
+    "techStack": [
+      "TypeScript",
+      "React",
+      "Next.js",
+      "CSS",
+      "Postgres"
+    ],
     "summary": "Tisha is a frontend platform engineer who demonstrates strong evidence of modernizing UI architecture (React Server Components, design tokens) and raising security baselines across web surfaces (strict CSP, SRI, cookie hardening, XSS audits). She also takes cross-team ownership, performing database migrations and coordinating security reviews while producing runbooks and mentoring peers on safe patterns.",
     "skills": [
       {
@@ -250,7 +263,12 @@
     "engineerId": "eng-arnav",
     "generatedAt": "2026-04-26T07:00:15.326Z",
     "published": false,
-    "techStack": ["Postgres", "SQL", "Python", "Kafka"],
+    "techStack": [
+      "Postgres",
+      "SQL",
+      "Python",
+      "Kafka"
+    ],
     "summary": "Arnav owns deep, multi-layered Postgres infrastructure work on the data-infra team — from diagnosing query planner regressions to leading a multi-quarter Postgres 16 fleet upgrade. His artifacts show a consistent pattern of building systems that balance correctness and performance (staleness-aware replica routing, replication backlog handling) and of making that knowledge accessible to others through RFCs, runbooks, and consistency-model documentation cited across multiple design reviews.",
     "skills": [
       {
@@ -366,7 +384,14 @@
     "engineerId": "eng-sahib",
     "generatedAt": "2026-04-26T07:00:40.480Z",
     "published": false,
-    "techStack": ["TypeScript", "Node.js", "OpenTelemetry", "GitHub Actions", "Helm", "Kubernetes"],
+    "techStack": [
+      "TypeScript",
+      "Node.js",
+      "OpenTelemetry",
+      "GitHub Actions",
+      "Helm",
+      "Kubernetes"
+    ],
     "summary": "Sahib has built and shipped foundational internal tooling and observability infrastructure that other teams depend on daily. Their work spans developer experience automation, CI efficiency, and distributed tracing — consistently oriented toward reducing friction for the broader engineering org. Recent artifacts also show early moves into technical leadership, taking ownership of a cross-team review process.",
     "skills": [
       {
@@ -489,7 +514,14 @@
     "engineerId": "eng-priya",
     "generatedAt": "2026-04-26T07:01:03.251Z",
     "published": false,
-    "techStack": ["Python", "Postgres", "pgvector", "Spark", "Airflow", "Snowflake"],
+    "techStack": [
+      "Python",
+      "Postgres",
+      "pgvector",
+      "Spark",
+      "Airflow",
+      "Snowflake"
+    ],
     "summary": "Priya's artifacts show a track record of high-impact infrastructure work on the ML platform — migrating embedding storage to pgvector for a 12x p99 latency improvement and building an internal LLM eval harness used across teams. She consistently works across team boundaries, providing technical review and guidance beyond her immediate scope in data-infra.",
     "skills": [
       {
@@ -598,7 +630,13 @@
     "engineerId": "eng-jonas",
     "generatedAt": "2026-04-26T07:01:24.852Z",
     "published": false,
-    "techStack": ["PagerDuty", "Grafana", "Postgres", "Kafka", "Stripe"],
+    "techStack": [
+      "PagerDuty",
+      "Grafana",
+      "Postgres",
+      "Kafka",
+      "Stripe"
+    ],
     "summary": "Jonas is a staff engineer whose artifacts center on org-wide incident-response infrastructure and system reliability. He reduced P1 MTTR from 47 to 19 minutes across the org in Q4 2025, established structured postmortem practices adopted by seven teams, and consistently makes invisible maintenance and ownership work visible for the engineers around him.",
     "skills": [
       {
@@ -711,7 +749,13 @@
     "engineerId": "eng-mei",
     "generatedAt": "2026-04-26T07:01:50.046Z",
     "published": false,
-    "techStack": ["React", "TypeScript", "JavaScript", "CSS", "HTML"],
+    "techStack": [
+      "React",
+      "TypeScript",
+      "JavaScript",
+      "CSS",
+      "HTML"
+    ],
     "summary": "Mei's artifacts show a frontend engineer who digs into concrete performance problems and builds product features end-to-end. In under a year she shipped a custom windowing solution that raised scroll FPS from 22 to 60 and cut memory by ~40 MB, and she built a resilient multi-step merchant onboarding flow that handles a real upstream cold-start failure. She actively seeks mentorship and cross-team knowledge to deepen her mental model of frontend performance at scale.",
     "skills": [
       {
@@ -821,7 +865,13 @@
     "engineerId": "eng-david",
     "generatedAt": "2026-04-26T07:02:11.643Z",
     "published": false,
-    "techStack": ["TypeScript", "Node.js", "Helm", "Kubernetes", "GitHub Actions"],
+    "techStack": [
+      "TypeScript",
+      "Node.js",
+      "Helm",
+      "Kubernetes",
+      "GitHub Actions"
+    ],
     "summary": "David's artifacts show early but substantive contributions spanning backend refactoring and developer-experience tooling. His work demonstrates an ability to take on non-trivial system changes — coordinating design with senior engineers before writing code — and a pragmatic instinct for reducing friction in CI/review workflows. He is actively building exposure in infra-adjacent areas and has begun seeking mentorship toward a platform/infra path.",
     "skills": [
       {
@@ -914,6 +964,121 @@
       {
         "type": "slack",
         "summary": "#infra-curious 2026-03-15 — publicly signaled infra career intent and sought mentorship from engineers who have made the product-to-infra transition."
+      }
+    ]
+  },
+  {
+    "engineerId": "eng-arnav-chintawar",
+    "generatedAt": "2026-04-27T18:30:00.000Z",
+    "published": false,
+    "summary": "Arnav is a backend platform engineer with strong evidence in payment event reliability, distributed-systems debugging, and internal developer tooling. His work shows a pattern of making fragile service workflows safer, easier to operate, and easier for other engineers to adopt.",
+    "techStack": [
+      "TypeScript",
+      "Node.js",
+      "Postgres",
+      "Kafka",
+      "Redis",
+      "OpenTelemetry"
+    ],
+    "skills": [
+      {
+        "name": "Backend platform engineering",
+        "summary": "Designed and shipped service foundations across authentication, payments, and internal tooling with strong reliability expectations.",
+        "description": "Arnav repeatedly works at the service boundary layer: request tracing, typed event contracts, webhook processing, and local service bootstrap. His strongest artifacts show practical backend ownership rather than isolated feature work.",
+        "confidence": "high",
+        "evidence": [
+          "GitHub PR #1842 introduced typed service boundaries for billing-webhooks and reduced ambiguous event payload handling.",
+          "Jira PLATFORM-218 shows Arnav owning the rollout plan for shared request tracing middleware across three backend services.",
+          "Slack #platform thread documents his service bootstrap workflow being adopted by billing, fraud, and onboarding pods."
+        ]
+      },
+      {
+        "name": "Distributed systems debugging",
+        "summary": "Traced queue, retry, and idempotency issues across services during incident response and post-release stabilization.",
+        "description": "Arnav has evidence of debugging distributed failure modes where symptoms span queues, retries, processor timeouts, and service handoffs. His work emphasizes reproducible traces and safer recovery paths.",
+        "confidence": "high",
+        "evidence": [
+          "Slack incident thread: isolated duplicate event replay to a missing idempotency guard in the payment event fanout path.",
+          "Jira PAY-441 reduced webhook retry noise after processor timeout spikes by adding clearer retry classification.",
+          "GitHub review on PR #1860 pushed for deterministic idempotency-key propagation before approving the retry worker change."
+        ]
+      },
+      {
+        "name": "Developer experience tooling",
+        "summary": "Built internal scripts and templates that reduced setup friction for product engineers working with backend services.",
+        "description": "Arnav’s developer-experience work is grounded in backend productivity: fixture setup, local service commands, and documentation that helps engineers run multi-service workflows safely.",
+        "confidence": "medium",
+        "evidence": [
+          "GitHub PR #1775 added a local service bootstrap command with seeded fixtures and health-check verification.",
+          "Slack #platform notes show three pods adopting his debugging workflow for local webhook replay.",
+          "Internal doc service-bootstrap.md explains local setup paths and failure cases for new backend engineers."
+        ]
+      },
+      {
+        "name": "Cross-functional technical communication",
+        "summary": "Wrote design notes and rollout updates that aligned product, support, and engineering during infrastructure changes.",
+        "description": "Arnav’s profile shows communication that makes infrastructure work legible across teams: migration plans, launch notes, rollback criteria, and support-facing context.",
+        "confidence": "medium",
+        "evidence": [
+          "Jira RFC-62: authored migration plan for billing event schema v2 with compatibility windows and rollback criteria.",
+          "Slack launch thread coordinated support-readiness notes before billing event schema rollout.",
+          "GitHub PR #1811 summary clearly separated product-visible behavior from backend compatibility changes."
+        ]
+      }
+    ],
+    "projectThemes": [
+      {
+        "title": "Billing event reliability",
+        "summary": "Stabilized webhook processing by adding idempotency checks, trace IDs, and clearer retry semantics across payment event handlers.",
+        "description": "This work focused on reducing duplicate processing and making payment event behavior observable. Evidence spans a typed webhook boundary PR, retry classification ticket, and incident follow-up thread.",
+        "artifactRefs": [
+          "github:pr-1842",
+          "jira:PAY-441",
+          "slack:#payments-incidents"
+        ]
+      },
+      {
+        "title": "Service bootstrap and local workflows",
+        "summary": "Created local development tooling that made service setup repeatable and reduced onboarding time for engineers joining backend pods.",
+        "description": "Arnav built a local bootstrap command with seeded fixtures, health checks, and documented troubleshooting paths. The work helped product engineers run backend services without manual fixture setup.",
+        "artifactRefs": [
+          "github:pr-1775",
+          "jira:PLATFORM-218",
+          "doc:service-bootstrap"
+        ]
+      },
+      {
+        "title": "Schema migration coordination",
+        "summary": "Led a staged billing schema migration with compatibility windows, support handoff notes, and rollback criteria.",
+        "description": "This theme shows Arnav coordinating a backend migration across engineering and support. The plan included compatibility windows, rollback criteria, launch-readiness notes, and implementation review.",
+        "artifactRefs": [
+          "jira:RFC-62",
+          "slack:#billing-launch",
+          "github:pr-1811"
+        ]
+      }
+    ],
+    "contributionEvidence": [
+      {
+        "type": "github",
+        "summary": "PR #1842 introduced typed billing webhook boundaries and reduced ambiguous event payload handling.",
+        "url": "https://github.example/orggraph/payments/pull/1842"
+      },
+      {
+        "type": "jira",
+        "summary": "PAY-441 reduced webhook retry noise after processor timeout spikes by separating retryable and terminal failures."
+      },
+      {
+        "type": "slack",
+        "summary": "In #payments-incidents, Arnav isolated duplicate event replay to a missing idempotency guard and proposed the fix path."
+      },
+      {
+        "type": "doc",
+        "summary": "service-bootstrap.md documents repeatable local setup, seeded fixtures, health checks, and common failure cases for backend engineers."
+      },
+      {
+        "type": "jira",
+        "summary": "RFC-62 captured billing schema v2 migration sequencing, compatibility windows, and rollback criteria."
       }
     ]
   }

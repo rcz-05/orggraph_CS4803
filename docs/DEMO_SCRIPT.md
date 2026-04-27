@@ -4,9 +4,18 @@
 
 ## Pre-flight (do this 5 minutes before)
 - `npm run dev` — confirm http://localhost:3000/app loads.
-- Confirm `data/profiles.json` has 8 entries (`Get-Content data/profiles.json | Measure-Object -Line`).
+- Confirm `data/profiles.json` includes `eng-rayan` and `eng-arnav-chintawar`.
 - In a private browser window, hit `/app` so the role cookie defaults to Engineer.
 - Have the role switcher in muscle memory — it lives top-right of the navbar. Role switching is route-aware: Manager search → Engineer redirects to Teams; Engineer profile → Manager redirects to My team.
+
+## Optional cold open — New engineer setup
+1. Open `/app/demo`.
+2. Click one or more mocked connector buttons: **GitHub**, **Jira**, **Slack**.
+3. The **Continue** button stays disabled until at least one tool is connected.
+4. Continue to `/app/loading`. The loading screen has no seconds countdown. Progress advances in uneven pauses, but every jump is exactly 10% or 20%.
+5. After the hard-coded 2m34s flow, it redirects to `/app/demo/profile`, an Arnav Chintawar generated profile rendered with the same UI as `/app/profile`.
+
+> Note: `/app/demo`, `/app/loading`, and `/app/demo/profile` force Engineer view so this flow does not inherit Manager view from a previous demo beat.
 
 ## Beat 1 — The engineer (0:00 – 0:50)
 1. Land on `/app`. Read the eyebrow + Caveat headline aloud: *"What's your hidden expertise?"*

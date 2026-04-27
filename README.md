@@ -12,13 +12,14 @@
 
 ## What this repo is
 
-This is the **product application** repo for OrgGraph. The marketing landing page lives in a separate repo. Everything that gets demoed at the capstone — profile pipeline, talent search, team portal, manager view — is built here.
+This is the **product application** repo for OrgGraph. The marketing landing page lives in a separate repo. Everything that gets demoed at the capstone — mocked connector onboarding, profile pipeline, talent search, team portal, manager view — is built here.
 
-## The three MVP features
+## MVP surfaces
 
 | Feature | Surface | What it does |
 | --- | --- | --- |
 | **Engineer profiles** | `/app/profile`, `/app/profile/[id]`, `/app/profile/[id]/skill/[index]`, `/app/profile/[id]/project/[index]` | Auto-generates an evidence-based profile from seeded GitHub/Jira/Slack artifacts. Skills and project themes link to detail pages. Engineers edit draft preferences, then publishing locks the profile. In Manager view, candidate profiles show a Payments Architecture match box. |
+| **Demo onboarding** | `/app/demo`, `/app/loading`, `/app/demo/profile` | Mock new-user flow for connecting GitHub, Jira, and Slack. The user must connect at least one tool, then sees a 2m34s non-uniform loading screen whose progress jumps only by 10% or 20%, and lands on a generated Arnav Chintawar profile using the same profile UI as `/app/profile`. These routes force Engineer view. |
 | **Talent search** | `/app/search` | Manager-only free-text search ("fraud detection", "React design systems"). AI-ranks seeded profiles against the query, shows match score, matched skills, and transfer-interest. UI filters support **Open to transfer only** and minimum score thresholds. Engineer view is redirected away from this route. |
 | **Team portal** | `/app/teams`, `/app/teams/[slug]`, `/app/teams/[slug]/projects/[index]` | Role-aware team browsing. Engineer view highlights **Best fit teams** from Rayan's profile and supports signaling interest with intent + message. Manager view swaps "My profile" for **My team**, makes Payments Architecture mission/projects editable, and exposes detailed project pages. |
 | **Interest center** | `/app/interests` | Role-aware interest tracking. Engineer view shows Rayan's sent interests and follow-ups. Manager view shows the Payments Architecture inbox with read/unread, star, follow-up, and priority sorting. |
@@ -67,6 +68,7 @@ components/
   shared/                     # PostitCard, CaveatHeading, Eyebrow
   ui/                         # shadcn primitives (button, card, input, badge, skeleton)
   interests/                  # InterestCenter
+  demo/                       # mocked connector onboarding + loading guard
   profile/                    # ProfileView, PreferencesEditor, GenerateEmptyState, detail/edit helpers
   search/                     # SearchPageClient, ResultRow, MatchScoreBadge
   teams/                      # TeamCard, TeamFilters, SignalInterestButton, RecentInterestPanel
@@ -93,10 +95,11 @@ docs/
 
 See `docs/DEMO_SCRIPT.md` for the full 3-minute walkthrough, mapped to seeded ids and queries:
 
-1. **Engineer view** — open `/app/profile`, review Rayan's generated profile, open skill/project detail pages, edit draft preferences, then publish.
-2. **Manager view** — `/app/search` is available only to managers. Search *"fraud detection"* or *"React design systems"*, use Open to transfer / minimum-score filters, click a candidate, and show the Payments Architecture match box on their profile.
-3. **Engineer view again** — `/app/teams` shows Best fit teams, filters, team detail pages, and project detail pages. Signal interest with a coffee-chat or role-interest intent plus a message.
-4. **Manager view encore** — **My team** opens `/app/teams/payments-architecture`, where mission/current projects are editable and the manager can review `/app/interests` with read/star/follow-up workflow.
+1. **New engineer onboarding** — open `/app/demo`, connect at least one mocked tool, continue through `/app/loading`, then land on `/app/demo/profile` for Arnav Chintawar. All three pages force Engineer view.
+2. **Engineer view** — open `/app/profile`, review Rayan's generated profile, open skill/project detail pages, edit draft preferences, then publish.
+3. **Manager view** — `/app/search` is available only to managers. Search *"fraud detection"* or *"React design systems"*, use Open to transfer / minimum-score filters, click a candidate, and show the Payments Architecture match box on their profile.
+4. **Engineer view again** — `/app/teams` shows Best fit teams, filters, team detail pages, and project detail pages. Signal interest with a coffee-chat or role-interest intent plus a message.
+5. **Manager view encore** — **My team** opens `/app/teams/payments-architecture`, where mission/current projects are editable and the manager can review `/app/interests` with read/star/follow-up workflow.
 
 ## Onboarding for teammates / agents
 

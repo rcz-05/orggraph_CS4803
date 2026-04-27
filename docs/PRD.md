@@ -50,6 +50,12 @@
 - Profile has an editable **Preferences** section, including a toggle for *Open to internal transfer*.
 - Profile is visible at `/app/profile/[id]`.
 
+**Current demo implementation notes:**
+- `/app/demo` shows a mocked new-user connector step for GitHub, Jira, and Slack. At least one connector must be selected before continuing. Connector handlers are dummy functions today, with a small config surface intended for future OAuth wiring.
+- `/app/loading` simulates profile generation with a hard-coded 2m34s loading screen. It does not show a seconds countdown; progress advances in uneven timing and only jumps by 10% or 20% at a time.
+- `/app/demo/profile` renders the generated Arnav Chintawar profile with the same profile UI used by `/app/profile`.
+- All three demo onboarding routes force Engineer view so the flow does not inherit Manager view.
+
 ### Feature 2 — Skill-Based Internal Talent Search with AI Matching  ·  SCRUM-15  ·  Owner: Arnav
 **Description:** A manager-facing search where natural-language queries (e.g. *"who has React experience?"*, *"fraud detection experience"*) return a ranked list of internal candidates with match relevance, key matched skills, and stated transfer interest.
 
@@ -106,6 +112,7 @@ These are pilot/post-MVP metrics. For the **showcase demo**, success = the three
 4. Team & project discovery pages (Feature 3).
 5. Engineer ability to review / edit / publish profile (Feature 1).
 6. Role-specific demo surfaces: Engineer view for profile/team discovery; Manager view for talent search, managed-team editing, and interest inbox.
+7. Mocked new-user connector demo for GitHub/Jira/Slack leading to a generated profile.
 
 ### Explicitly excluded
 - Full org intelligence dashboards for executives.

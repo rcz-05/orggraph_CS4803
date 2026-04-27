@@ -7,8 +7,15 @@
     "yearsAtCompany": 4,
     "preferences": {
       "openToTransfer": true,
-      "interests": ["AI infra", "Fraud systems", "Developer experience"],
-      "growthGoals": ["Tech lead role", "Cross-team architecture work"]
+      "interests": [
+        "AI infra",
+        "Fraud systems",
+        "Developer experience"
+      ],
+      "growthGoals": [
+        "Tech lead role",
+        "Cross-team architecture work"
+      ]
     }
   },
   {
@@ -19,20 +26,30 @@
     "yearsAtCompany": 2,
     "preferences": {
       "openToTransfer": true,
-      "interests": ["Frontend systems", "Design engineering"],
-      "growthGoals": ["Move into AI tooling"]
+      "interests": [
+        "Frontend systems",
+        "Design engineering"
+      ],
+      "growthGoals": [
+        "Move into AI tooling"
+      ]
     }
   },
   {
     "id": "eng-arnav",
-    "name": "Arnav S.",
+    "name": "Arnav Sinha",
     "title": "Backend Engineer",
     "team": "data-infra",
     "yearsAtCompany": 3,
     "preferences": {
       "openToTransfer": false,
-      "interests": ["Distributed systems", "Postgres internals"],
-      "growthGoals": ["Become a staff engineer"]
+      "interests": [
+        "Distributed systems",
+        "Postgres internals"
+      ],
+      "growthGoals": [
+        "Become a staff engineer"
+      ]
     }
   },
   {
@@ -43,8 +60,14 @@
     "yearsAtCompany": 2,
     "preferences": {
       "openToTransfer": true,
-      "interests": ["Internal tooling", "DX automation"],
-      "growthGoals": ["Mentorship", "Lead a small team"]
+      "interests": [
+        "Internal tooling",
+        "DX automation"
+      ],
+      "growthGoals": [
+        "Mentorship",
+        "Lead a small team"
+      ]
     }
   },
   {
@@ -55,8 +78,13 @@
     "yearsAtCompany": 5,
     "preferences": {
       "openToTransfer": true,
-      "interests": ["LLM systems", "Recommendation infra"],
-      "growthGoals": ["Move into applied AI org"]
+      "interests": [
+        "LLM systems",
+        "Recommendation infra"
+      ],
+      "growthGoals": [
+        "Move into applied AI org"
+      ]
     }
   },
   {
@@ -67,8 +95,13 @@
     "yearsAtCompany": 7,
     "preferences": {
       "openToTransfer": false,
-      "interests": ["System reliability", "Incident response"],
-      "growthGoals": ["Principal engineer track"]
+      "interests": [
+        "System reliability",
+        "Incident response"
+      ],
+      "growthGoals": [
+        "Principal engineer track"
+      ]
     }
   },
   {
@@ -79,8 +112,13 @@
     "yearsAtCompany": 1,
     "preferences": {
       "openToTransfer": true,
-      "interests": ["React performance", "Design systems"],
-      "growthGoals": ["Tech lead within 2 years"]
+      "interests": [
+        "React performance",
+        "Design systems"
+      ],
+      "growthGoals": [
+        "Tech lead within 2 years"
+      ]
     }
   },
   {
@@ -91,8 +129,33 @@
     "yearsAtCompany": 1,
     "preferences": {
       "openToTransfer": true,
-      "interests": ["Build systems", "CI/CD", "Developer productivity"],
-      "growthGoals": ["Move into infra org"]
+      "interests": [
+        "Build systems",
+        "CI/CD",
+        "Developer productivity"
+      ],
+      "growthGoals": [
+        "Move into infra org"
+      ]
+    }
+  },
+  {
+    "id": "eng-arnav-chintawar",
+    "name": "Arnav Chintawar",
+    "title": "Backend Platform Engineer",
+    "team": "platform-experience",
+    "yearsAtCompany": 3,
+    "preferences": {
+      "openToTransfer": true,
+      "interests": [
+        "Payments reliability",
+        "Developer tooling",
+        "Distributed systems"
+      ],
+      "growthGoals": [
+        "Lead a platform migration",
+        "Grow into staff-level system ownership"
+      ]
     }
   }
 ]
