@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { TeamCard } from "./team-card";
 import { Eyebrow } from "@/components/shared/eyebrow";
@@ -15,16 +15,69 @@ export type TeamFit = {
 
 type Props = {
   teams: Team[];
-  bestFits?: TeamFit[];
+  showBestFits?: boolean;
 };
 
 function uniqueSorted(values: string[]): string[] {
   return Array.from(new Set(values)).sort();
 }
 
-export function TeamFiltersAndList({ teams, bestFits = [] }: Props) {
+export function TeamFiltersAndList({ teams, showBestFits = false }: Props) {
   const [tech, setTech] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);
+  const [bestFits, setBestFits] = useState<TeamFit[]>([]);
+  const [bestFitsLoading, setBestFitsLoading] = useState(showBestFits);
+  const [bestFitsError, setBestFitsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!showBestFits) return;
+
+    let cancelled = false;
+
+    async function loadBestFits() {
+      setBestFitsLoading(true);
+      setBestFitsError(null);
+
+      try {
+        const res = await fetch("/api/teams/recommendations", {
+          cache: "no-store",
+        });
+        const text = await res.text();
+        const data = text
+          ? (JSON.parse(text) as {
+              recommendations?: TeamFit[];
+              error?: string;
+            })
+          : {};
+
+        if (!res.ok) {
+          throw new Error(
+            data.error ?? `Could not rank teams (${res.status})`
+          );
+        }
+
+        if (!cancelled) {
+          setBestFits(data.recommendations ?? []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBestFitsError(
+            err instanceof Error ? err.message : "Could not rank teams"
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setBestFitsLoading(false);
+        }
+      }
+    }
+
+    void loadBestFits();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showBestFits]);
 
   const allTech = useMemo(
     () => uniqueSorted(teams.flatMap((t) => t.techStack)),
@@ -57,25 +110,37 @@ export function TeamFiltersAndList({ teams, bestFits = [] }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      {bestFitTeams.length > 0 && (
+      {showBestFits && (
         <section className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <Eyebrow>Best fit teams</Eyebrow>
             <p className="text-[13px] leading-[1.55] text-[#666]">
-              Highlighted from your profile skills, tech stack, interests, and
+              AI-ranked from your profile skills, tech stack, interests, and
               each team&apos;s current skill gaps.
             </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            {bestFitTeams.map(({ team, fit }) => (
-              <TeamCard
-                key={team.slug}
-                team={team}
-                fitScore={fit.score}
-                fitReasons={fit.reasons}
-              />
-            ))}
-          </div>
+          {bestFitsLoading ? (
+            <div className="grid gap-5 md:grid-cols-3">
+              <BestFitSkeleton />
+              <BestFitSkeleton />
+              <BestFitSkeleton />
+            </div>
+          ) : bestFitsError ? (
+            <p className="rounded-2xl border border-dashed border-[#b5c5d6] bg-[#dce4ef]/45 p-5 text-[13px] text-[#3a566e]">
+              Best fit ranking failed: {bestFitsError}
+            </p>
+          ) : bestFitTeams.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-3">
+              {bestFitTeams.map(({ team, fit }) => (
+                <TeamCard
+                  key={team.slug}
+                  team={team}
+                  fitScore={fit.score}
+                  fitReasons={fit.reasons}
+                />
+              ))}
+            </div>
+          ) : null}
         </section>
       )}
 
@@ -120,6 +185,28 @@ export function TeamFiltersAndList({ teams, bestFits = [] }: Props) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function BestFitSkeleton() {
+  return (
+    <div className="flex min-h-[260px] animate-pulse flex-col gap-4 rounded-2xl bg-[#dce4ef] p-6">
+      <div className="flex items-center justify-between">
+        <div className="h-5 w-20 rounded-full bg-[#b5c5d6]" />
+        <div className="h-3 w-12 rounded-full bg-[#b5c5d6]/70" />
+      </div>
+      <div className="h-8 w-2/3 rounded-md bg-white/50" />
+      <div className="flex flex-col gap-2">
+        <div className="h-3 w-full rounded-full bg-[#b5c5d6]/60" />
+        <div className="h-3 w-5/6 rounded-full bg-[#b5c5d6]/60" />
+        <div className="h-3 w-4/6 rounded-full bg-[#b5c5d6]/60" />
+      </div>
+      <div className="mt-auto flex flex-wrap gap-1.5">
+        <div className="h-5 w-16 rounded-md bg-white/50" />
+        <div className="h-5 w-20 rounded-md bg-white/50" />
+        <div className="h-5 w-14 rounded-md bg-white/50" />
+      </div>
     </div>
   );
 }

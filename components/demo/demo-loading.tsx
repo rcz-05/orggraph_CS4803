@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
   GitPullRequest,
@@ -13,48 +13,82 @@ import {
 import { CaveatHeading } from "@/components/shared/caveat-heading";
 import { Eyebrow } from "@/components/shared/eyebrow";
 
-// Demo-tuned duration — full-length 2m34s pipeline compressed ~13x so judges
-// see the visual rhythm of all 8 stages without a dead-air stretch.
-// Original 154_000ms value is preserved in git history if a longer
-// presentation is ever needed.
-const DURATION_MS = 12_000;
-
 const STAGES = [
-  { at: 0, progress: 0, label: "Connecting to source APIs", icon: <GitPullRequest className="h-4 w-4" /> },
-  { at: 800, progress: 10, label: "Reading pull requests and review comments", icon: <GitPullRequest className="h-4 w-4" /> },
-  { at: 2_400, progress: 30, label: "Mapping Jira ownership and project scope", icon: <Ticket className="h-4 w-4" /> },
-  { at: 4_000, progress: 40, label: "Finding mentoring and design signals in Slack", icon: <MessageSquare className="h-4 w-4" /> },
-  { at: 6_100, progress: 60, label: "Clustering evidence into skills and projects", icon: <Sparkles className="h-4 w-4" /> },
-  { at: 8_500, progress: 80, label: "Drafting profile summary", icon: <Sparkles className="h-4 w-4" /> },
-  { at: 10_500, progress: 90, label: "Attaching evidence snippets", icon: <CheckCircle2 className="h-4 w-4" /> },
-  { at: 12_000, progress: 100, label: "Profile ready", icon: <CheckCircle2 className="h-4 w-4" /> },
+  { progress: 5, label: "Connecting to selected work sources", icon: <GitPullRequest className="h-4 w-4" /> },
+  { progress: 35, label: "Condensing commits, PRs, Jira tickets, and sprints", icon: <Ticket className="h-4 w-4" /> },
+  { progress: 65, label: "Consolidating repository-level ownership", icon: <GitPullRequest className="h-4 w-4" /> },
+  { progress: 90, label: "Drafting profile from staged evidence", icon: <Sparkles className="h-4 w-4" /> },
+  { progress: 100, label: "Profile ready", icon: <CheckCircle2 className="h-4 w-4" /> },
 ];
 
-function getStage(elapsedMs: number) {
-  return STAGES.reduce((current, stage) =>
-    elapsedMs >= stage.at ? stage : current
-  );
-}
+type PipelineState = {
+  condensed?: unknown[];
+  profileInput?: unknown;
+};
 
 export function DemoLoading() {
   const router = useRouter();
-  const [elapsedMs, setElapsedMs] = useState(0);
-  const activeStage = getStage(elapsedMs);
+  const searchParams = useSearchParams();
+  const [stageIndex, setStageIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const activeStage = STAGES[stageIndex];
   const progress = activeStage.progress;
 
   useEffect(() => {
-    const startedAt = Date.now();
-    const interval = window.setInterval(() => {
-      const nextElapsed = Date.now() - startedAt;
-      setElapsedMs(nextElapsed);
-      if (nextElapsed >= DURATION_MS) {
-        window.clearInterval(interval);
-        router.push("/app/demo/profile");
-      }
-    }, 200);
+    let cancelled = false;
+    const sources =
+      searchParams
+        .get("sources")
+        ?.split(",")
+        .map((source) => source.trim())
+        .filter(Boolean) ?? [];
 
-    return () => window.clearInterval(interval);
-  }, [router]);
+    async function runPipeline() {
+      try {
+        setError(null);
+        setStageIndex(0);
+
+        const state: PipelineState = {};
+
+        setStageIndex(1);
+        const phase1 = await postJson<{
+          condensed: unknown[];
+        }>("/api/demo/pipeline/phase1", { sources });
+        state.condensed = phase1.condensed;
+        if (cancelled) return;
+
+        setStageIndex(2);
+        const phase2 = await postJson<{
+          profileInput: unknown;
+        }>("/api/demo/pipeline/phase2", {
+          condensed: state.condensed,
+        });
+        state.profileInput = phase2.profileInput;
+        if (cancelled) return;
+
+        setStageIndex(3);
+        await postJson("/api/demo/pipeline/phase3", {
+          profileInput: state.profileInput,
+        });
+        if (cancelled) return;
+
+        setStageIndex(4);
+        window.setTimeout(() => {
+          if (!cancelled) router.push("/app/demo/profile");
+        }, 600);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Pipeline failed");
+        }
+      }
+    }
+
+    void runPipeline();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-12rem)] max-w-3xl flex-col justify-center gap-8 py-8">
@@ -72,8 +106,13 @@ export function DemoLoading() {
           <div>
             <Eyebrow>Progress</Eyebrow>
             <p className="mt-2 text-[15px] font-semibold text-[#0a0a0a]">
-              {activeStage.label}
+              {error ? "Pipeline needs attention" : activeStage.label}
             </p>
+            {error && (
+              <p className="mt-2 max-w-xl text-[12px] leading-[1.5] text-[#9e4433]">
+                {error}
+              </p>
+            )}
           </div>
           <div className="text-right">
             <p className="text-4xl font-bold tabular-nums text-[#0a0a0a]">
@@ -91,8 +130,8 @@ export function DemoLoading() {
       </section>
 
       <ol className="grid gap-3 md:grid-cols-2">
-        {STAGES.slice(0, -1).map((stage) => {
-          const complete = elapsedMs >= stage.at;
+        {STAGES.slice(0, -1).map((stage, index) => {
+          const complete = index <= stageIndex && !error;
           return (
             <li
               key={stage.label}
@@ -110,4 +149,20 @@ export function DemoLoading() {
       </ol>
     </div>
   );
+}
+
+async function postJson<T = unknown>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  const data = text ? (JSON.parse(text) as { error?: string }) : {};
+
+  if (!res.ok) {
+    throw new Error(data.error ?? `Request failed (${res.status})`);
+  }
+
+  return data as T;
 }

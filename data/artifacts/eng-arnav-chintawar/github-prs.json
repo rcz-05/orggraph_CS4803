@@ -1,0 +1,124 @@
+[
+  {
+    "id": "github:pr-2217",
+    "repo": "payments/checkout-gateway",
+    "number": 2217,
+    "title": "Make checkout capture retries idempotent across processor failover",
+    "state": "merged",
+    "author": "arnav-chintawar",
+    "merged_at": "2026-02-10T20:16:03Z",
+    "files_changed": 18,
+    "additions": 711,
+    "deletions": 103,
+    "description": "Bundles the checkout idempotency store, Stripe transient-failure fallback, and replay-safe processor routing into one rollout. The change closes a class of duplicate capture bugs from mobile checkout retries and processor 5xx spikes. Rollout dashboard showed replay_hit_rate at 3.8% during peak traffic and zero duplicate captures across the 48h canary.",
+    "linked_commits": ["8b71d9c4e6a2", "cb42a10d91f8", "e4d19af80b72"],
+    "linked_jira": ["PAY-312", "PAY-328"],
+    "review_comments": [
+      "rayan: the fallback path is a lot easier to reason about now that idempotency owns the replay contract.",
+      "jonas: approved after the metric-cardinality fix. This is ready for the payment-critical rollout path."
+    ]
+  },
+  {
+    "id": "github:pr-2294",
+    "repo": "platform/deploy-orchestrator",
+    "number": 2294,
+    "title": "Progressive rollout guardrails for payment-critical services",
+    "state": "merged",
+    "author": "arnav-chintawar",
+    "merged_at": "2026-03-11T13:25:44Z",
+    "files_changed": 16,
+    "additions": 584,
+    "deletions": 71,
+    "description": "Adds service.yaml-driven rollout policies for services tagged payment-critical. Canary progression pauses when p99 latency, error rate, or processor fallback metrics exceed the configured SLO budget. The pause notification includes rollback owner, failing SLO window, dashboard link, and rollback command so on-call can act without digging through deploy logs.",
+    "linked_commits": ["3e90bb2a44d1", "7c9a411bc093"],
+    "linked_jira": ["PLAT-441", "PLAT-452"],
+    "review_comments": [
+      "sahib: moving thresholds to service.yaml makes this usable outside payments too.",
+      "jonas: this should reduce ambiguous canary-paused pages. Approved."
+    ]
+  },
+  {
+    "id": "github:pr-2241",
+    "repo": "payments/checkout-gateway",
+    "number": 2241,
+    "title": "Add merchant-level observability for checkout capture funnel",
+    "state": "merged",
+    "author": "arnav-chintawar",
+    "merged_at": "2026-02-21T11:48:30Z",
+    "files_changed": 9,
+    "additions": 373,
+    "deletions": 41,
+    "description": "Adds structured p50/p95/p99 capture latency histograms, replay hit rate, fallback success rate, and double-capture prevention counters scoped to merchant_id. Previously the only capture signal was a single global error rate counter that couldn't distinguish processor-level degradation from merchant-specific retry storms. The new metrics fed directly into the post-incident review for a February 14th Stripe degradation where three merchants had elevated retry loops that were invisible until customer support escalated. Dashboard was built alongside the metrics so the on-call runbook could link directly to the relevant panels. Cart_id was intentionally excluded from all metric labels after a cardinality incident on a prior service; this was caught in review and documented in the observability ADR.",
+    "linked_commits": ["55f0efa7a232"],
+    "linked_jira": ["PAY-341", "OBS-88"],
+    "review_comments": [
+      "jonas: initially had cart_id in the metric tags — that would have blown up cardinality. Arnav caught it before merge and removed it. Dashboard looks correct now. Approved.",
+      "priya: the runbook examples matching the emitted metric names is a small thing but it's saved me time during incidents before. Good call including the test for it.",
+      "rayan: would be good to add a SLO burn-rate alert off replay_hit_rate once we have 2 weeks of baseline data. Arnav opened a follow-up ticket."
+    ]
+  },
+  {
+    "id": "github:pr-2309",
+    "repo": "billing/event-pipeline",
+    "number": 2309,
+    "title": "Stabilize billing webhook consumer with deduplication and end-to-end trace propagation",
+    "state": "merged",
+    "author": "arnav-chintawar",
+    "merged_at": "2026-02-24T16:52:11Z",
+    "files_changed": 14,
+    "additions": 439,
+    "deletions": 46,
+    "description": "Addresses two independent reliability gaps in the billing-event-pipeline Kafka consumer that surfaced during a February incident post-mortem. First: Stripe re-delivers webhook events for up to 72 hours after a transient consumer failure. Without deduplication, a restarted consumer would re-apply invoice.paid events, causing double-credits on affected billing periods. This PR adds SHA-256 fingerprinting on (event_type, external_event_id, billing_period_id) with a Redis-backed TTL matched to Stripe's retry window. In the week after rollout, billing.webhook.deduplicated_events averaged 140 suppressed re-deliveries per day. Second: billing event failures were appearing as orphaned spans in Grafana Tempo because the Kafka consumer was not extracting the W3C traceparent header that upstream producers were injecting. This PR adds a KafkaPropagator utility that reconstructs the remote span context and wraps each invoice apply in a child span tagged with event_type, billing_period_id, and consumer_group. Mean time from alert to root cause dropped from approximately 25 minutes to under 5 minutes in the first three incidents handled after rollout, based on on-call notes.",
+    "linked_commits": ["a1f3c820de94", "d9b04f1c3a77"],
+    "linked_jira": ["BILL-219", "BILL-224", "OBS-91"],
+    "review_comments": [
+      "priya: the 72h TTL choice is well-justified. My first instinct was 48h but after reading the Stripe docs you linked I agree. Worth keeping that comment in the code too so no one shortens it later.",
+      "rayan: the OTel span status codes were using raw integers (1, 2) instead of the SpanStatusCode enum — that's a correctness issue if the enum values ever shift. Fixed before merge.",
+      "sahib: I ran the consumer locally against the mock Stripe server and the Tempo waterfall now shows a clean parent-child chain from the Stripe webhook all the way to the Postgres write. This is exactly what we needed. Approved.",
+      "jonas: can we add a metric for spans where traceparent extraction returns a no-op context? Would help us catch producers that forgot to inject headers."
+    ]
+  },
+  {
+    "id": "github:pr-2351",
+    "repo": "platform/service-bootstrap",
+    "number": 2351,
+    "title": "Add local dev bootstrap and typed config validation for billing-event-pipeline",
+    "state": "merged",
+    "author": "arnav-chintawar",
+    "merged_at": "2026-03-15T09:33:57Z",
+    "files_changed": 11,
+    "additions": 500,
+    "deletions": 34,
+    "description": "Consolidates two pain points that came up repeatedly in the #dev-experience Slack channel: new engineers spending half a day wiring up the billing-event-pipeline locally, and two recent on-call incidents caused by REDIS_URL pointing at the wrong cluster after a deploy. The bootstrap script (npm run bootstrap:local) runs Postgres migrations, provisions Kafka topics with correct partition counts, seeds sample invoice and billing period rows, and starts a mock Stripe webhook server on port 4242. A NODE_ENV guard prevents the script from running against staging or production databases. The config layer replaces 11 scattered process.env reads with a single loadConfig() call backed by a Zod schema that validates and types all environment variables at startup. Missing or malformed values produce a structured error listing every failing field before the process binds to any port. In internal testing, onboarding time for the billing service dropped from roughly 4 hours to under 10 minutes. The Zod validation change also caught a STRIPE_WEBHOOK_SECRET misconfiguration in the staging environment that had been silently falling back to an empty string.",
+    "linked_commits": ["fc220d8b5519", "b83ec65f2d01"],
+    "linked_jira": ["DX-77", "BILL-231", "PLAT-467"],
+    "review_comments": [
+      "priya: the NODE_ENV guard on the bootstrap script is important — glad it's there. Would have been easy to forget. Does it also block against a DATABASE_URL that looks like staging? Arnav added a hostname check as a secondary guard.",
+      "sahib: the Zod config pattern is exactly what I wished our auth service had when we had that REDIS_URL incident last quarter. Can this be extracted into the platform service template? Arnav opened PLAT-471 to track it.",
+      "rayan: the cached singleton in loadConfig is fine for production but would cause test pollution if module cache isn't reset between tests. Arnav added a reset helper and documented it. Approved.",
+      "jonas: mock Stripe server is simple but covers the cases we actually need for local dev. The /v1/webhooks/sent introspection endpoint will be useful for writing integration tests."
+    ]
+  },
+  {
+    "id": "github:pr-2388",
+    "repo": "billing/event-pipeline",
+    "number": 2388,
+    "title": "Staged schema migration for billing_events v2 with dual-write, backfill, and validation",
+    "state": "merged",
+    "author": "arnav-chintawar",
+    "merged_at": "2026-03-29T14:07:22Z",
+    "files_changed": 22,
+    "additions": 779,
+    "deletions": 60,
+    "description": "Executes the first three phases of the billing_events v2 schema migration. The v1 table stored Stripe-specific fields as five separate nullable columns (stripe_charge_id, stripe_invoice_id, stripe_customer_id, stripe_error_code, stripe_error_message). The v2 table normalizes these into a single processor_response JSONB column, enabling the billing pipeline to support additional processors without schema changes. Phase 1 (this PR): Deploy the v2 table with a partial index on (billing_period_id, created_at) WHERE status = 'pending' and a unique index on (billing_period_id, external_event_id) for deduplication at the database level. Enable dual-writes via the BILLING_SCHEMA_V2_WRITES feature flag so every new event is written to both tables. Phase 2 (this PR): Run the batched backfill job with a 500-row cursor-based page size, a Redis-backed resume cursor, and an automatic pause if the per-batch error rate exceeds 5%. Phase 3 (this PR): Run the validation job, which samples 1000 random v1 rows and asserts each has a matching v2 row with consistent invoice_id, status, and a non-null processor_response. The go/no-go checklist for retiring the v1 read path requires: mismatch count of zero, dual-write flag enabled for at least 48 hours, and a named rollback owner. A support team handoff document covers the new processor_response JSONB shape, equivalent SQL for the three most common support queries, and escalation steps if a billing event is missing from v2. Validation job ran against production and reported 0 mismatches across the 1000-row sample.",
+    "linked_commits": ["09d5b3a1f840", "61a8c77d39b3", "2d7fa93c81e6"],
+    "linked_jira": ["BILL-198", "BILL-207", "BILL-215", "DATA-104"],
+    "review_comments": [
+      "priya: the dual-write path uses Promise.all which will reject fast if the v2 write fails — is that intentional? If v2 is still experimental, should a v2 write failure be non-fatal? Arnav: it's intentional during the dual-write window so we catch bugs before the backfill. Added billing.event_writer.v2_write_failed metric and an alert so we know immediately if v2 writes are degraded rather than silently dropping data.",
+      "jonas: the partial index rationale wasn't obvious to me from the SQL alone. The comment Arnav added explaining the pending-event query pattern makes this reviewable by someone who hasn't read the query code. Good practice.",
+      "sahib: Promise.allSettled in the backfill job could mask per-row errors from monitoring. Arnav added the batch_error_rate gauge and the 5% auto-pause threshold which addresses this. The dry-run flag is a nice addition for running in production without a deploy.",
+      "rayan: the support handoff doc is well written — I sent it to the billing support lead before this merged and they had no questions. That's a good sign. The example query for the invoice.paid lookup pattern should be added to the internal wiki too.",
+      "priya: validation job sampling 1000 random rows with ORDER BY random() is fine for a one-time check but won't be reproducible when debugging a specific mismatch. Arnav added an optional seed parameter. Approved."
+    ]
+  }
+]

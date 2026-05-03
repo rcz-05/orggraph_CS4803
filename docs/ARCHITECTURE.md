@@ -233,10 +233,21 @@ Set `GOOGLE_GENERATIVE_AI_API_KEY` in `.env.local` (and in Vercel project env fo
 - Prompt: instruct model to extract skills + evidence + project themes; output **structured JSON** matching the `Profile` zod schema (use `generateObject`).
 - Output: `Profile` object. Cache by writing back to `data/profiles.json`.
 
+### Staged profile pipeline (`lib/staged-profile-pipeline.ts`)
+- Not wired into UI yet. Intended to replace the current one-shot profile prompt after validation.
+- Phase 1 condenses individual artifacts (`github_commit`, `github_pr`, `jira_ticket`, `jira_sprint`, docs/Slack) into compact evidence summaries.
+- Phase 2 consolidates all condensed code work from a repo into one repo-level ownership summary.
+- Phase 3 generates the final `Profile` from repo summaries plus Jira/sprint summaries, preserving the same `Profile` schema used by the app.
+
 ### Search ranking (`/api/search`)
 - Input: `{ query: string }`.
 - Implementation: load all profiles from `data/profiles.json`; pass them all in a single LLM call (small N — fits easily in context); ask for ranked `SearchResult[]` JSON sorted by `matchScore`.
 - The prompt intentionally omits no-signal candidates under 30. The UI filters returned results by Open to transfer and minimum score (`All`, `50+`, `70+`, `85+`).
+
+### Team fit ranking (`/api/teams/recommendations`)
+- Engineer view renders `/app/teams` immediately, then the client fetches `/api/teams/recommendations` and shows loading cards in the **Best fit teams** section while the model runs.
+- The endpoint runs one Gemini 2.5 Flash-Lite structured-output call over the current engineer profile and all seeded teams.
+- Output is the top 3 `TeamFit` rows (`teamSlug`, `score`, `reasons`) sorted by score. These teams render in **Best fit teams** while the regular team grid still shows the full filterable team list.
 
 ### Team signal (`/api/teams/signal`)
 - POST creates an interest signal with `intent` and `message`.
@@ -259,3 +270,5 @@ Add one-line entries here when product or architectural decisions are made.
 - **DR-004**: Pre-generate `data/profiles.json` — never call profile generation live during the demo.
 - **DR-005**: Role surfaces are intentionally different. Engineer view hides Talent Search and shows My Profile / Best fit teams / sent interests. Manager view shows Talent Search / My Team / team inbox.
 - **DR-006**: Interest data is process-session scoped in temp storage so demo interactions persist during a run and reset on server restart.
+- **DR-007**: Best fit teams are AI-ranked live from the current engineer profile and seeded teams.
+- **DR-008**: A staged profile-generation pipeline exists separately from the UI: artifact condensation → repo consolidation → final profile generation.

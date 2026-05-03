@@ -1,0 +1,484 @@
+[
+  {
+    "id": "github:commit:8b71d9c",
+    "sha": "8b71d9c4e6a2",
+    "repo": "payments/checkout-gateway",
+    "branch": "feature/idempotent-checkout-retries",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-02-03T14:18:22Z",
+    "message": "Add request-scoped idempotency keys to checkout capture path",
+    "files_changed": [
+      "src/checkout/capture.ts",
+      "src/idempotency/store.ts",
+      "test/checkout/capture.test.ts"
+    ],
+    "additions": 214,
+    "deletions": 38,
+    "diff_summary": "Introduces a Redis-backed idempotency store for checkout capture requests. Keys are derived from merchant_id, cart_id, payment_attempt_id, and capture_version. Adds replay handling so client retries return the original capture result instead of double-submitting to the processor.",
+    "tests": [
+      "capture retries return original result",
+      "concurrent captures serialize on the idempotency lock",
+      "expired keys allow a new capture attempt after 24h"
+    ],
+    "review_notes": [
+      "Rayan asked for explicit lock timeout telemetry before rollout.",
+      "Arnav added metrics for idempotency_lock_wait_ms and replay_hit_rate."
+    ]
+  },
+  {
+    "id": "github:commit:cb42a10",
+    "sha": "cb42a10d91f8",
+    "repo": "payments/checkout-gateway",
+    "branch": "feature/idempotent-checkout-retries",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-02-06T09:41:17Z",
+    "message": "Add payment processor fallback when Stripe capture returns transient 5xx",
+    "files_changed": [
+      "src/processors/stripe.ts",
+      "src/processors/fallback-router.ts",
+      "test/processors/fallback-router.test.ts"
+    ],
+    "additions": 176,
+    "deletions": 22,
+    "diff_summary": "Adds a guarded fallback path for transient Stripe capture failures. Retries are bounded by idempotency state so fallback cannot double-capture. Emits processor_fallback_attempted and processor_fallback_succeeded metrics for the rollout dashboard.",
+    "tests": [
+      "falls back only for retryable 5xx responses",
+      "does not fallback when idempotency record is missing",
+      "preserves original processor error for non-retryable declines"
+    ],
+    "review_notes": [
+      "Priya requested a p99 latency check for fallback routing.",
+      "Arnav added a benchmark showing fallback router adds 7ms p99."
+    ]
+  },
+  {
+    "id": "github:commit:55f0efa",
+    "sha": "55f0efa7a232",
+    "repo": "payments/checkout-gateway",
+    "branch": "feature/checkout-observability",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-02-18T18:04:03Z",
+    "message": "Instrument checkout funnel with merchant-level latency and replay metrics",
+    "files_changed": [
+      "src/observability/checkout-metrics.ts",
+      "dashboards/checkout-reliability.json",
+      "docs/runbooks/checkout-capture.md"
+    ],
+    "additions": 332,
+    "deletions": 41,
+    "diff_summary": "Adds merchant-level p50/p95/p99 capture latency, replay hit rate, fallback success rate, and double-capture prevention counters. Updates the runbook with dashboard links and rollback guidance for capture incidents.",
+    "tests": [
+      "metric tags avoid high-cardinality cart ids",
+      "runbook examples match emitted metric names"
+    ],
+    "review_notes": [
+      "Jonas approved the dashboard after Arnav removed cart_id from metric labels."
+    ]
+  },
+  {
+    "id": "github:commit:3e90bb2",
+    "sha": "3e90bb2a44d1",
+    "repo": "platform/deploy-orchestrator",
+    "branch": "feature/progressive-rollout-guards",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-04T12:11:49Z",
+    "message": "Add progressive rollout guardrails for payment services",
+    "files_changed": [
+      "src/rollouts/guardrails.ts",
+      "src/rollouts/payment-service-policy.ts",
+      "test/rollouts/guardrails.test.ts"
+    ],
+    "additions": 261,
+    "deletions": 33,
+    "diff_summary": "Adds rollout policy checks for services tagged payment-critical. Rollouts pause automatically if error rate, p99 latency, or processor fallback attempts exceed the service's SLO budget during a canary window.",
+    "tests": [
+      "pauses rollout when p99 exceeds budget for two windows",
+      "allows rollout when only non-critical warnings fire",
+      "requires rollback owner before payment-critical production deploys"
+    ],
+    "review_notes": [
+      "Sahib suggested making policies service.yaml-driven instead of hardcoded.",
+      "Arnav moved thresholds into service metadata and added schema validation."
+    ]
+  },
+  {
+    "id": "github:commit:7c9a411",
+    "sha": "7c9a411bc093",
+    "repo": "platform/deploy-orchestrator",
+    "branch": "feature/progressive-rollout-guards",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-08T16:37:55Z",
+    "message": "Write rollback owner handoff flow for canary pauses",
+    "files_changed": [
+      "src/rollouts/notifications.ts",
+      "docs/runbooks/canary-pause-handoff.md",
+      "test/rollouts/notifications.test.ts"
+    ],
+    "additions": 148,
+    "deletions": 19,
+    "diff_summary": "Adds Slack handoff notifications when a canary pauses. The notification names the rollback owner, failing SLO window, dashboard link, and exact rollback command. Adds runbook steps for payment-service canary pauses.",
+    "tests": [
+      "notification includes rollback command and owner",
+      "does not page secondary owner until canary remains paused for 15 minutes"
+    ],
+    "review_notes": [
+      "Jonas approved after Arnav added the dashboard deep link to the alert."
+    ]
+  },
+  {
+    "id": "github:commit:e4d19af",
+    "sha": "e4d19af80b72",
+    "repo": "payments/checkout-gateway",
+    "branch": "feature/idempotent-checkout-retries",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-02-04T11:26:09Z",
+    "message": "Serialize concurrent checkout captures behind idempotency lock",
+    "files_changed": [
+      "src/idempotency/store.ts",
+      "src/checkout/capture.ts",
+      "test/checkout/concurrent-capture.test.ts"
+    ],
+    "additions": 189,
+    "deletions": 44,
+    "diff_summary": "Adds lock acquisition around checkout capture so concurrent client retries cannot submit duplicate processor captures. Stores the first successful capture result and returns it to replayed requests. Adds tests for concurrent requests, lock timeout, and replay result hydration.",
+    "diff": [
+      {
+        "file": "src/idempotency/store.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -12,15 +12,43 @@ export type IdempotencyRecord = {\n   status: \"pending\" | \"completed\" | \"failed\";\n   requestHash: string;\n   responseBody?: unknown;\n+  lockedUntil?: string;\n };\n \n export class IdempotencyStore {\n   constructor(private readonly redis: RedisClient) {}\n \n+  async acquireLock(key: string, ttlMs: number): Promise<boolean> {\n+    const lockKey = `checkout:capture:lock:${key}`;\n+    const result = await this.redis.set(lockKey, \"1\", {\n+      nx: true,\n+      px: ttlMs,\n+    });\n+\n+    return result === \"OK\";\n+  }\n+\n+  async releaseLock(key: string): Promise<void> {\n+    await this.redis.del(`checkout:capture:lock:${key}`);\n+  }\n+\n   async get(key: string): Promise<IdempotencyRecord | null> {\n     const raw = await this.redis.get(`checkout:capture:${key}`);\n     return raw ? JSON.parse(raw) as IdempotencyRecord : null;\n   }\n \n   async put(key: string, record: IdempotencyRecord): Promise<void> {\n     await this.redis.set(\n       `checkout:capture:${key}`,\n       JSON.stringify(record),\n       { ex: 60 * 60 * 24 }\n     );\n   }\n }"
+      },
+      {
+        "file": "src/checkout/capture.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -31,22 +31,48 @@ export async function captureCheckout(input: CaptureInput) {\n   const key = buildIdempotencyKey(input);\n   const existing = await idempotencyStore.get(key);\n \n-  if (existing?.status === \"completed\") {\n+  if (existing?.status === \"completed\" && existing.responseBody) {\n     metrics.increment(\"checkout.capture.replay_hit\");\n     return existing.responseBody as CaptureResult;\n   }\n \n-  await idempotencyStore.put(key, {\n-    status: \"pending\",\n-    requestHash: hashCaptureInput(input),\n-  });\n+  const lockAcquired = await idempotencyStore.acquireLock(key, 7_500);\n+  if (!lockAcquired) {\n+    metrics.increment(\"checkout.capture.lock_contention\");\n+    throw new RetryableCaptureError(\"capture already in flight\");\n+  }\n \n-  const result = await processor.capture(input);\n+  try {\n+    await idempotencyStore.put(key, {\n+      status: \"pending\",\n+      requestHash: hashCaptureInput(input),\n+      lockedUntil: new Date(Date.now() + 7_500).toISOString(),\n+    });\n+\n+    const result = await processor.capture(input);\n \n-  await idempotencyStore.put(key, {\n-    status: \"completed\",\n-    requestHash: hashCaptureInput(input),\n-    responseBody: result,\n-  });\n+    await idempotencyStore.put(key, {\n+      status: \"completed\",\n+      requestHash: hashCaptureInput(input),\n+      responseBody: result,\n+    });\n \n-  return result;\n+    return result;\n+  } finally {\n+    await idempotencyStore.releaseLock(key);\n+  }\n }"
+      },
+      {
+        "file": "test/checkout/concurrent-capture.test.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,31 @@\n+import { captureCheckout } from \"../../src/checkout/capture\";\n+import { fakeProcessor, fakeRedis } from \"../helpers/fakes\";\n+\n+it(\"serializes concurrent capture retries behind one processor call\", async () => {\n+  const input = checkoutCaptureInput({ paymentAttemptId: \"pa_123\" });\n+  fakeProcessor.capture.mockResolvedValue({ captureId: \"cap_123\", status: \"captured\" });\n+\n+  const [first, second] = await Promise.allSettled([\n+    captureCheckout(input),\n+    captureCheckout(input),\n+  ]);\n+\n+  expect(fakeProcessor.capture).toHaveBeenCalledTimes(1);\n+  expect(first.status).toBe(\"fulfilled\");\n+  expect(second.status).toBe(\"rejected\");\n+  expect(fakeRedis.del).toHaveBeenCalledWith(\n+    expect.stringContaining(\"checkout:capture:lock\")\n+  );\n+});"
+      }
+    ],
+    "tests": [
+      "serializes concurrent capture retries behind one processor call",
+      "replayed completed captures return original response body",
+      "lock is released when processor capture throws"
+    ],
+    "review_notes": [
+      "Rayan asked for the lock TTL to stay below the client retry timeout.",
+      "Arnav set the lock TTL to 7.5s and added a metric for lock contention."
+    ]
+  },
+  {
+    "id": "github:commit:a1f3c82",
+    "sha": "a1f3c820de94",
+    "repo": "billing/event-pipeline",
+    "branch": "feature/webhook-event-deduplication",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-02-11T10:22:44Z",
+    "message": "Add Kafka consumer deduplication for billing webhook events",
+    "files_changed": [
+      "src/consumers/billing-webhook-consumer.ts",
+      "src/deduplication/event-fingerprint.ts",
+      "src/deduplication/processed-event-store.ts",
+      "test/consumers/billing-webhook-consumer.test.ts"
+    ],
+    "additions": 241,
+    "deletions": 29,
+    "diff_summary": "Introduces SHA-256 fingerprinting for incoming billing webhook events keyed on event_type, external_event_id, and billing_period_id. Before processing, the consumer checks a Redis set with a 72-hour TTL. Duplicate events are acked immediately and counted in billing.webhook.deduplicated_events. Reduces downstream invoice mutation errors caused by Stripe re-delivering invoice.paid events after transient consumer failures.",
+    "diff": [
+      {
+        "file": "src/deduplication/event-fingerprint.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,28 @@\n+import { createHash } from \"crypto\";\n+\n+export type BillingWebhookEvent = {\n+  event_type: string;\n+  external_event_id: string;\n+  billing_period_id: string;\n+  payload: unknown;\n+};\n+\n+export function buildEventFingerprint(event: BillingWebhookEvent): string {\n+  const parts = [\n+    event.event_type,\n+    event.external_event_id,\n+    event.billing_period_id,\n+  ].join(\":\");\n+  return createHash(\"sha256\").update(parts).digest(\"hex\");\n+}\n+\n+export function buildFingerprintKey(fingerprint: string): string {\n+  return `billing:webhook:processed:${fingerprint}`;\n+}"
+      },
+      {
+        "file": "src/consumers/billing-webhook-consumer.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -18,14 +18,36 @@ export class BillingWebhookConsumer {\n   async handleMessage(message: KafkaMessage): Promise<void> {\n     const event = parseWebhookEvent(message.value);\n \n-    await this.invoiceService.applyEvent(event);\n-    await this.producer.ack(message);\n+    const fingerprint = buildEventFingerprint(event);\n+    const key = buildFingerprintKey(fingerprint);\n+\n+    const alreadyProcessed = await this.redis.exists(key);\n+    if (alreadyProcessed) {\n+      this.metrics.increment(\"billing.webhook.deduplicated_events\", {\n+        event_type: event.event_type,\n+      });\n+      await this.producer.ack(message);\n+      return;\n+    }\n+\n+    await this.invoiceService.applyEvent(event);\n+\n+    await this.redis.set(key, \"1\", { ex: 60 * 60 * 72 });\n+    this.metrics.increment(\"billing.webhook.processed_events\", {\n+      event_type: event.event_type,\n+    });\n+    await this.producer.ack(message);\n   }\n }"
+      },
+      {
+        "file": "test/consumers/billing-webhook-consumer.test.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -41,6 +41,22 @@ describe(\"BillingWebhookConsumer\", () => {\n+  it(\"deduplicates a re-delivered invoice.paid event\", async () => {\n+    const event = billingWebhookEvent({ event_type: \"invoice.paid\", external_event_id: \"evt_999\" });\n+    fakeRedis.exists.mockResolvedValueOnce(1);\n+\n+    await consumer.handleMessage(kafkaMessage(event));\n+\n+    expect(fakeInvoiceService.applyEvent).not.toHaveBeenCalled();\n+    expect(fakeMetrics.increment).toHaveBeenCalledWith(\n+      \"billing.webhook.deduplicated_events\",\n+      { event_type: \"invoice.paid\" }\n+    );\n+    expect(fakeProducer.ack).toHaveBeenCalledTimes(1);\n+  });\n });"
+      }
+    ],
+    "tests": [
+      "deduplicates a re-delivered invoice.paid event",
+      "processes a new event and writes fingerprint to Redis",
+      "acks message even when Redis write fails after invoice apply"
+    ],
+    "review_notes": [
+      "Priya asked why 72h TTL rather than 48h.",
+      "Arnav noted Stripe's retry window is up to 72h and aligned TTL accordingly.",
+      "Jonas asked for a metric split by event_type to track which event types have the highest re-delivery rate."
+    ]
+  },
+  {
+    "id": "github:commit:d9b04f1",
+    "sha": "d9b04f1c3a77",
+    "repo": "billing/event-pipeline",
+    "branch": "feature/otel-billing-trace-propagation",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-02-19T15:03:31Z",
+    "message": "Propagate OpenTelemetry trace context through billing Kafka consumer",
+    "files_changed": [
+      "src/consumers/billing-webhook-consumer.ts",
+      "src/tracing/kafka-propagator.ts",
+      "src/tracing/tracer.ts",
+      "test/tracing/kafka-propagator.test.ts"
+    ],
+    "additions": 198,
+    "deletions": 17,
+    "diff_summary": "Extracts W3C traceparent headers from Kafka message headers and reconstructs the remote span context before processing each billing event. Wraps invoice apply and deduplication check in a child span tagged with event_type, billing_period_id, and consumer_group. Eliminates the broken trace boundary that previously caused billing event failures to appear as orphaned spans in Grafana Tempo, cutting mean incident investigation time from ~25 minutes to under 5 minutes in the first week after rollout.",
+    "diff": [
+      {
+        "file": "src/tracing/kafka-propagator.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,38 @@\n+import { propagation, context, trace, SpanContext } from \"@opentelemetry/api\";\n+import { KafkaMessage } from \"kafkajs\";\n+\n+export function extractTraceContext(message: KafkaMessage): ReturnType<typeof context.active> {\n+  const carrier: Record<string, string> = {};\n+\n+  for (const [key, value] of Object.entries(message.headers ?? {})) {\n+    if (typeof value === \"string\") carrier[key] = value;\n+    else if (Buffer.isBuffer(value)) carrier[key] = value.toString(\"utf8\");\n+  }\n+\n+  return propagation.extract(context.active(), carrier);\n+}\n+\n+export function withKafkaSpan(\n+  ctx: ReturnType<typeof context.active>,\n+  spanName: string,\n+  attributes: Record<string, string>,\n+  fn: () => Promise<void>\n+): Promise<void> {\n+  const tracer = trace.getTracer(\"billing-event-pipeline\");\n+  return context.with(ctx, () => {\n+    const span = tracer.startSpan(spanName, { attributes });\n+    return context.with(trace.setSpan(context.active(), span), async () => {\n+      try {\n+        await fn();\n+        span.setStatus({ code: 1 });\n+      } catch (err) {\n+        span.recordException(err as Error);\n+        span.setStatus({ code: 2, message: (err as Error).message });\n+        throw err;\n+      } finally {\n+        span.end();\n+      }\n+    });\n+  });\n+}"
+      },
+      {
+        "file": "src/consumers/billing-webhook-consumer.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -18,10 +18,22 @@ export class BillingWebhookConsumer {\n   async handleMessage(message: KafkaMessage): Promise<void> {\n+    const traceCtx = extractTraceContext(message);\n     const event = parseWebhookEvent(message.value);\n \n-    const fingerprint = buildEventFingerprint(event);\n-    const key = buildFingerprintKey(fingerprint);\n-    const alreadyProcessed = await this.redis.exists(key);\n-    if (alreadyProcessed) { ... }\n-    await this.invoiceService.applyEvent(event);\n+    await withKafkaSpan(\n+      traceCtx,\n+      \"billing.webhook.process\",\n+      {\n+        \"billing.event_type\": event.event_type,\n+        \"billing.period_id\": event.billing_period_id,\n+        \"messaging.consumer_group\": this.consumerGroup,\n+      },\n+      async () => {\n+        const fingerprint = buildEventFingerprint(event);\n+        const key = buildFingerprintKey(fingerprint);\n+        const alreadyProcessed = await this.redis.exists(key);\n+        if (alreadyProcessed) {\n+          this.metrics.increment(\"billing.webhook.deduplicated_events\", { event_type: event.event_type });\n+          return;\n+        }\n+        await this.invoiceService.applyEvent(event);\n+        await this.redis.set(key, \"1\", { ex: 60 * 60 * 72 });\n+      }\n+    );\n+    await this.producer.ack(message);\n   }\n }"
+      }
+    ],
+    "tests": [
+      "extracts W3C traceparent from Kafka message headers",
+      "records span exception and re-throws when invoice apply fails",
+      "span attributes include event_type and billing_period_id"
+    ],
+    "review_notes": [
+      "Rayan noted the span status codes should use the OTel SpanStatusCode enum, not raw integers.",
+      "Arnav updated to SpanStatusCode.OK and SpanStatusCode.ERROR in follow-up commit.",
+      "Sahib approved after confirming Tempo dashboards show stitched traces end-to-end."
+    ]
+  },
+  {
+    "id": "github:commit:fc220d8",
+    "sha": "fc220d8b5519",
+    "repo": "platform/service-bootstrap",
+    "branch": "feature/billing-service-local-dev",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-12T11:44:02Z",
+    "message": "Add local dev bootstrap script for billing-event-pipeline with seed data and mock Stripe",
+    "files_changed": [
+      "scripts/bootstrap-billing-local.ts",
+      "scripts/seed/billing-events.ts",
+      "config/local/billing-event-pipeline.env.example",
+      "docker/mock-stripe/server.ts",
+      "docs/local-dev/billing-pipeline.md"
+    ],
+    "additions": 388,
+    "deletions": 0,
+    "diff_summary": "Adds a single-command local setup for the billing-event-pipeline service. The script provisions a Postgres schema, runs pending migrations, creates Kafka topics with correct partition counts, seeds sample invoice and billing period rows, and starts a lightweight Express mock of the Stripe webhook endpoint. Typed config validation via zod rejects misconfigured env files at startup. Reduces new engineer onboarding from a half-day process (previously tracked in #dev-experience Slack threads) to under 10 minutes in internal testing.",
+    "diff": [
+      {
+        "file": "scripts/bootstrap-billing-local.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,62 @@\n+import { Pool } from \"pg\";\n+import { Kafka } from \"kafkajs\";\n+import { loadConfig } from \"../src/config\";\n+import { runMigrations } from \"../src/db/migrations\";\n+import { seedBillingEvents } from \"./seed/billing-events\";\n+import { startMockStripe } from \"../docker/mock-stripe/server\";\n+\n+async function bootstrap() {\n+  console.log(\"[bootstrap] Loading config...\");\n+  const config = loadConfig(); // throws on missing/invalid env vars\n+\n+  const pool = new Pool({ connectionString: config.DATABASE_URL });\n+\n+  console.log(\"[bootstrap] Running migrations...\");\n+  await runMigrations(pool);\n+\n+  console.log(\"[bootstrap] Provisioning Kafka topics...\");\n+  const kafka = new Kafka({ brokers: [config.KAFKA_BROKER] });\n+  const admin = kafka.admin();\n+  await admin.connect();\n+  await admin.createTopics({\n+    topics: [\n+      { topic: \"billing.webhook.events\", numPartitions: 6, replicationFactor: 1 },\n+      { topic: \"billing.invoice.applied\", numPartitions: 3, replicationFactor: 1 },\n+    ],\n+    waitForLeaders: true,\n+  });\n+  await admin.disconnect();\n+\n+  console.log(\"[bootstrap] Seeding billing events...\");\n+  await seedBillingEvents(pool);\n+\n+  console.log(\"[bootstrap] Starting mock Stripe server on :4242...\");\n+  await startMockStripe({ port: 4242 });\n+\n+  console.log(\"[bootstrap] Done. Run `npm run dev` to start the consumer.\");\n+  await pool.end();\n+}\n+\n+bootstrap().catch((err) => {\n+  console.error(\"[bootstrap] Failed:\", err.message);\n+  process.exit(1);\n+});"
+      },
+      {
+        "file": "config/local/billing-event-pipeline.env.example",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,14 @@\n+# Copy to .env and fill in values before running bootstrap\n+DATABASE_URL=postgres://billing:billing@localhost:5432/billing_local\n+KAFKA_BROKER=localhost:9092\n+REDIS_URL=redis://localhost:6379\n+STRIPE_WEBHOOK_SECRET=whsec_test_placeholder\n+MOCK_STRIPE_BASE_URL=http://localhost:4242\n+CONSUMER_GROUP=billing-webhook-consumer-local\n+# OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318  # optional: uncomment for local tracing"
+      },
+      {
+        "file": "docker/mock-stripe/server.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,44 @@\n+import express from \"express\";\n+\n+export async function startMockStripe({ port }: { port: number }): Promise<void> {\n+  const app = express();\n+  app.use(express.json());\n+\n+  const sentEvents: unknown[] = [];\n+\n+  app.post(\"/v1/webhooks/send\", (req, res) => {\n+    const { event_type, external_event_id, billing_period_id, payload } = req.body;\n+    if (!event_type || !external_event_id) {\n+      return res.status(400).json({ error: \"missing required fields\" });\n+    }\n+    sentEvents.push(req.body);\n+    res.status(200).json({ received: true, event_type, external_event_id });\n+  });\n+\n+  app.get(\"/v1/webhooks/sent\", (_req, res) => {\n+    res.json({ count: sentEvents.length, events: sentEvents });\n+  });\n+\n+  await new Promise<void>((resolve) => app.listen(port, resolve));\n+}"
+      }
+    ],
+    "tests": [
+      "bootstrap exits non-zero when DATABASE_URL is missing from env",
+      "Kafka topic creation is idempotent when topics already exist",
+      "mock Stripe returns 400 when external_event_id is absent"
+    ],
+    "review_notes": [
+      "Priya asked whether the seed script would interfere with shared staging databases.",
+      "Arnav added a guard that aborts if NODE_ENV is not 'local' or 'test'.",
+      "Jonas suggested adding the mock Stripe port to the .env.example; Arnav added MOCK_STRIPE_BASE_URL."
+    ]
+  },
+  {
+    "id": "github:commit:b83ec65",
+    "sha": "b83ec65f2d01",
+    "repo": "platform/service-bootstrap",
+    "branch": "feature/billing-service-local-dev",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-13T09:17:55Z",
+    "message": "Add typed env config validation with zod for billing-event-pipeline",
+    "files_changed": [
+      "src/config/index.ts",
+      "src/config/schema.ts",
+      "test/config/schema.test.ts"
+    ],
+    "additions": 112,
+    "deletions": 34,
+    "diff_summary": "Replaces untyped process.env reads scattered across the service with a single loadConfig() call that validates and parses all environment variables through a zod schema at startup. Invalid or missing values throw a structured ConfigError with the list of failing fields before the process binds to any port. Removes a class of silent misconfigurations that caused two prior on-call incidents where REDIS_URL pointed at the wrong cluster after a deploy.",
+    "diff": [
+      {
+        "file": "src/config/schema.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,34 @@\n+import { z } from \"zod\";\n+\n+export const ConfigSchema = z.object({\n+  DATABASE_URL: z.string().url(),\n+  KAFKA_BROKER: z.string().min(1),\n+  REDIS_URL: z.string().url(),\n+  STRIPE_WEBHOOK_SECRET: z.string().startsWith(\"whsec_\"),\n+  CONSUMER_GROUP: z.string().min(1),\n+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),\n+  NODE_ENV: z.enum([\"local\", \"test\", \"staging\", \"production\"]).default(\"production\"),\n+  IDEMPOTENCY_TTL_HOURS: z\n+    .string()\n+    .transform(Number)\n+    .pipe(z.number().int().min(1).max(168))\n+    .default(\"72\"),\n+});\n+\n+export type AppConfig = z.infer<typeof ConfigSchema>;"
+      },
+      {
+        "file": "src/config/index.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -1,8 +1,22 @@\n-export function getRedisUrl(): string {\n-  return process.env.REDIS_URL ?? \"\";\n-}\n-\n-export function getKafkaBroker(): string {\n-  return process.env.KAFKA_BROKER ?? \"localhost:9092\";\n-}\n+import { ConfigSchema, AppConfig } from \"./schema\";\n+\n+let cachedConfig: AppConfig | null = null;\n+\n+export function loadConfig(): AppConfig {\n+  if (cachedConfig) return cachedConfig;\n+\n+  const result = ConfigSchema.safeParse(process.env);\n+  if (!result.success) {\n+    const fields = result.error.issues.map((i) => `${i.path.join(\".\")}: ${i.message}`);\n+    throw new Error(\n+      `[config] Invalid environment:\\n${fields.map((f) => `  - ${f}`).join(\"\\n\")}`\n+    );\n+  }\n+\n+  cachedConfig = result.data;\n+  return cachedConfig;\n+}"
+      },
+      {
+        "file": "test/config/schema.test.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,28 @@\n+import { loadConfig } from \"../../src/config\";\n+\n+beforeEach(() => {\n+  jest.resetModules();\n+  // reset cached config between tests\n+  jest.isolateModules(() => {});\n+});\n+\n+it(\"throws a structured error listing missing fields\", () => {\n+  const env = { NODE_ENV: \"test\" }; // missing DATABASE_URL, KAFKA_BROKER, etc.\n+  expect(() => ConfigSchema.safeParse(env)).not.toThrow();\n+  const result = ConfigSchema.safeParse(env);\n+  expect(result.success).toBe(false);\n+  if (!result.success) {\n+    const paths = result.error.issues.map((i) => i.path[0]);\n+    expect(paths).toContain(\"DATABASE_URL\");\n+    expect(paths).toContain(\"KAFKA_BROKER\");\n+    expect(paths).toContain(\"REDIS_URL\");\n+  }\n+});\n+\n+it(\"accepts a valid env with optional OTEL endpoint absent\", () => {\n+  const env = validEnv({ OTEL_EXPORTER_OTLP_ENDPOINT: undefined });\n+  const result = ConfigSchema.safeParse(env);\n+  expect(result.success).toBe(true);\n+});"
+      }
+    ],
+    "tests": [
+      "throws a structured error listing missing fields",
+      "accepts a valid env with optional OTEL endpoint absent",
+      "rejects STRIPE_WEBHOOK_SECRET that does not start with whsec_",
+      "IDEMPOTENCY_TTL_HOURS coerced from string to number and bounded"
+    ],
+    "review_notes": [
+      "Rayan asked whether the cached singleton would cause test pollution.",
+      "Arnav moved the cache reset into a test helper and documented it in the config README.",
+      "Sahib approved: noted this pattern should be added to the platform service template."
+    ]
+  },
+  {
+    "id": "github:commit:09d5b3a",
+    "sha": "09d5b3a1f840",
+    "repo": "billing/event-pipeline",
+    "branch": "feature/billing-schema-migration-v2",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-21T13:55:17Z",
+    "message": "Add dual-write migration path for billing_events v2 schema with feature flag guard",
+    "files_changed": [
+      "src/db/migrations/0017_billing_events_v2.sql",
+      "src/db/migrations/runner.ts",
+      "src/billing/event-writer.ts",
+      "src/config/schema.ts",
+      "test/billing/event-writer.test.ts"
+    ],
+    "additions": 307,
+    "deletions": 48,
+    "diff_summary": "Introduces the billing_events_v2 table with a normalized processor_response JSONB column replacing five nullable scalar columns. Adds a BILLING_SCHEMA_V2_WRITES feature flag to event-writer.ts so new writes go to both v1 and v2 tables during the dual-write window, preserving read compatibility for existing dashboards and the support team's SQL queries. Migration adds a non-null check constraint on processor_response and a partial index on (billing_period_id, status) for pending events. Old columns are retained and marked deprecated in schema comments; a follow-up backfill job will populate v2 rows from existing v1 data.",
+    "diff": [
+      {
+        "file": "src/db/migrations/0017_billing_events_v2.sql",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,38 @@\n+-- Migration: 0017_billing_events_v2\n+-- Adds billing_events_v2 with normalized processor_response.\n+-- Old billing_events table is unchanged during dual-write window.\n+\n+CREATE TABLE billing_events_v2 (\n+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n+  invoice_id    UUID NOT NULL REFERENCES invoices(id),\n+  billing_period_id UUID NOT NULL,\n+  event_type    TEXT NOT NULL,\n+  external_event_id TEXT NOT NULL,\n+  processor_response JSONB NOT NULL,\n+  status        TEXT NOT NULL CHECK (status IN ('pending', 'applied', 'failed', 'deduplicated')),\n+  trace_id      TEXT,\n+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),\n+  applied_at    TIMESTAMPTZ\n+);\n+\n+-- Partial index for queries filtering pending events by billing period\n+CREATE INDEX idx_billing_events_v2_pending\n+  ON billing_events_v2 (billing_period_id, created_at)\n+  WHERE status = 'pending';\n+\n+-- Unique constraint to prevent duplicate external events per billing period\n+CREATE UNIQUE INDEX idx_billing_events_v2_dedup\n+  ON billing_events_v2 (billing_period_id, external_event_id);\n+\n+COMMENT ON COLUMN billing_events_v2.processor_response IS\n+  'Normalized processor payload. Replaces stripe_charge_id, stripe_invoice_id, '\n+  'stripe_customer_id, stripe_error_code, stripe_error_message columns in billing_events v1.';"
+      },
+      {
+        "file": "src/billing/event-writer.ts",
+        "language": "ts",
+        "change_type": "modified",
+        "patch": "@@ -24,14 +24,38 @@ export class BillingEventWriter {\n   async write(event: AppliedBillingEvent): Promise<void> {\n-    await this.pool.query(\n-      `INSERT INTO billing_events\n-         (invoice_id, billing_period_id, event_type, external_event_id,\n-          stripe_charge_id, stripe_invoice_id, stripe_customer_id,\n-          stripe_error_code, stripe_error_message, status, trace_id)\n-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,\n-      [\n-        event.invoiceId, event.billingPeriodId, event.eventType,\n-        event.externalEventId, event.processorResponse.chargeId,\n-        event.processorResponse.invoiceId, event.processorResponse.customerId,\n-        event.processorResponse.errorCode, event.processorResponse.errorMessage,\n-        event.status, event.traceId,\n-      ]\n-    );\n+    const v1Write = this.pool.query(\n+      `INSERT INTO billing_events\n+         (invoice_id, billing_period_id, event_type, external_event_id,\n+          stripe_charge_id, stripe_invoice_id, stripe_customer_id,\n+          stripe_error_code, stripe_error_message, status, trace_id)\n+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)\n+       ON CONFLICT (billing_period_id, external_event_id) DO NOTHING`,\n+      [\n+        event.invoiceId, event.billingPeriodId, event.eventType,\n+        event.externalEventId, event.processorResponse.chargeId,\n+        event.processorResponse.invoiceId, event.processorResponse.customerId,\n+        event.processorResponse.errorCode, event.processorResponse.errorMessage,\n+        event.status, event.traceId,\n+      ]\n+    );\n+\n+    const writes: Promise<unknown>[] = [v1Write];\n+\n+    if (this.config.BILLING_SCHEMA_V2_WRITES === \"true\") {\n+      writes.push(\n+        this.pool.query(\n+          `INSERT INTO billing_events_v2\n+             (invoice_id, billing_period_id, event_type, external_event_id,\n+              processor_response, status, trace_id)\n+           VALUES ($1,$2,$3,$4,$5,$6,$7)\n+           ON CONFLICT (billing_period_id, external_event_id) DO NOTHING`,\n+          [\n+            event.invoiceId, event.billingPeriodId, event.eventType,\n+            event.externalEventId, JSON.stringify(event.processorResponse),\n+            event.status, event.traceId,\n+          ]\n+        )\n+      );\n+    }\n+\n+    await Promise.all(writes);\n   }\n }"
+      }
+    ],
+    "tests": [
+      "writes to v1 only when BILLING_SCHEMA_V2_WRITES is unset",
+      "writes to both v1 and v2 when feature flag is enabled",
+      "v2 write does not block on conflict for deduplicated events",
+      "dual write failure in v2 does not roll back the v1 row"
+    ],
+    "review_notes": [
+      "Priya asked whether a v2 write failure would silently drop events.",
+      "Arnav clarified Promise.all rejects fast; added a metric billing.event_writer.v2_write_failed and an alert threshold.",
+      "Sahib asked for the partial index rationale; Arnav added a comment explaining the pending-event query pattern."
+    ]
+  },
+  {
+    "id": "github:commit:61a8c77",
+    "sha": "61a8c77d39b3",
+    "repo": "billing/event-pipeline",
+    "branch": "feature/billing-schema-migration-v2",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-25T17:28:44Z",
+    "message": "Add v1-to-v2 backfill job with row-range batching and pause-on-error guard",
+    "files_changed": [
+      "src/jobs/backfill-billing-events-v2.ts",
+      "src/jobs/backfill-state-store.ts",
+      "docs/runbooks/billing-schema-migration.md",
+      "test/jobs/backfill-billing-events-v2.test.ts"
+    ],
+    "additions": 279,
+    "deletions": 0,
+    "diff_summary": "Implements a batched backfill job that pages through billing_events v1 rows by (id, created_at) cursor and inserts normalized rows into billing_events_v2. Batch size is configurable (default 500 rows). Stores cursor position in a Redis key so the job can be safely restarted after failure. Pauses automatically if more than 5% of rows in a batch fail validation; emits billing.backfill.batch_failed and billing.backfill.rows_written counters. Runbook documents rollback criteria: if v2_write_failed alert fires in production, disable BILLING_SCHEMA_V2_WRITES flag and open a handoff ticket for the data-eng team.",
+    "diff": [
+      {
+        "file": "src/jobs/backfill-billing-events-v2.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,74 @@\n+import { Pool } from \"pg\";\n+import { BackfillStateStore } from \"./backfill-state-store\";\n+import { normalizeV1Row } from \"../billing/event-normalizer\";\n+\n+const BATCH_SIZE = parseInt(process.env.BACKFILL_BATCH_SIZE ?? \"500\", 10);\n+const ERROR_RATE_THRESHOLD = 0.05;\n+\n+export async function runBackfill(pool: Pool, stateStore: BackfillStateStore): Promise<void> {\n+  let cursor = await stateStore.getCursor();\n+  let totalWritten = 0;\n+\n+  while (true) {\n+    const rows = await pool.query<BillingEventV1Row>(\n+      `SELECT * FROM billing_events\n+       WHERE id > $1\n+       ORDER BY id ASC\n+       LIMIT $2`,\n+      [cursor ?? \"00000000-0000-0000-0000-000000000000\", BATCH_SIZE]\n+    );\n+\n+    if (rows.rowCount === 0) break;\n+\n+    let batchErrors = 0;\n+    const inserts: Promise<void>[] = [];\n+\n+    for (const row of rows.rows) {\n+      const normalized = normalizeV1Row(row);\n+      if (!normalized) { batchErrors++; continue; }\n+\n+      inserts.push(\n+        pool\n+          .query(\n+            `INSERT INTO billing_events_v2\n+               (id, invoice_id, billing_period_id, event_type, external_event_id,\n+                processor_response, status, trace_id, created_at, applied_at)\n+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)\n+             ON CONFLICT (billing_period_id, external_event_id) DO NOTHING`,\n+            [\n+              row.id, row.invoice_id, row.billing_period_id, row.event_type,\n+              row.external_event_id, JSON.stringify(normalized.processorResponse),\n+              row.status, row.trace_id, row.created_at, row.applied_at,\n+            ]\n+          )\n+          .then(() => { totalWritten++; })\n+          .catch(() => { batchErrors++; })\n+      );\n+    }\n+\n+    await Promise.allSettled(inserts);\n+\n+    const errorRate = batchErrors / rows.rowCount;\n+    metrics.gauge(\"billing.backfill.batch_error_rate\", errorRate);\n+    metrics.increment(\"billing.backfill.rows_written\", totalWritten);\n+\n+    if (errorRate > ERROR_RATE_THRESHOLD) {\n+      throw new BackfillPausedError(\n+        `Batch error rate ${(errorRate * 100).toFixed(1)}% exceeded threshold. Cursor: ${cursor}`\n+      );\n+    }\n+\n+    cursor = rows.rows[rows.rowCount - 1].id;\n+    await stateStore.saveCursor(cursor);\n+  }\n+}"
+      },
+      {
+        "file": "src/jobs/backfill-state-store.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,22 @@\n+import { RedisClient } from \"../redis/client\";\n+\n+const CURSOR_KEY = \"billing:backfill:v2:cursor\";\n+\n+export class BackfillStateStore {\n+  constructor(private readonly redis: RedisClient) {}\n+\n+  async getCursor(): Promise<string | null> {\n+    return this.redis.get(CURSOR_KEY);\n+  }\n+\n+  async saveCursor(id: string): Promise<void> {\n+    await this.redis.set(CURSOR_KEY, id);\n+  }\n+\n+  async resetCursor(): Promise<void> {\n+    await this.redis.del(CURSOR_KEY);\n+  }\n+}"
+      }
+    ],
+    "tests": [
+      "resumes from saved cursor after restart",
+      "pauses and throws when batch error rate exceeds 5%",
+      "skips rows where normalizeV1Row returns null without failing the batch",
+      "saves cursor after each successful batch"
+    ],
+    "review_notes": [
+      "Jonas asked whether Promise.allSettled could mask per-row errors from monitoring.",
+      "Arnav added per-row error counting and the batch_error_rate gauge to surface this.",
+      "Priya asked for a dry-run flag to count rows without writing; Arnav added BACKFILL_DRY_RUN env var in follow-up."
+    ]
+  },
+  {
+    "id": "github:commit:2d7fa93",
+    "sha": "2d7fa93c81e6",
+    "repo": "billing/event-pipeline",
+    "branch": "feature/billing-schema-migration-v2",
+    "author": "arnav-chintawar",
+    "committed_at": "2026-03-27T10:09:38Z",
+    "message": "Add migration validation job and support handoff notes for billing_events v2 cutover",
+    "files_changed": [
+      "src/jobs/validate-billing-events-v2.ts",
+      "docs/runbooks/billing-schema-migration.md",
+      "docs/support-handoff/billing-schema-v2-cutover.md"
+    ],
+    "additions": 193,
+    "deletions": 12,
+    "diff_summary": "Adds a post-backfill validation job that samples 1000 random billing_events v1 rows and asserts each has a matching v2 row with equivalent invoice_id, status, and a non-null processor_response. Reports billing.validation.mismatch_count. Updates the migration runbook with the go/no-go checklist: mismatch count must be 0, v2 write flag must have been enabled for at least 48 hours, and a rollback owner must be named before the v1 read path is retired. Adds a support-team handoff document covering the new processor_response JSONB shape, example queries for common support workflows, and how to escalate if a billing event is missing from v2.",
+    "diff": [
+      {
+        "file": "src/jobs/validate-billing-events-v2.ts",
+        "language": "ts",
+        "change_type": "added",
+        "patch": "@@ -0,0 +1,52 @@\n+import { Pool } from \"pg\";\n+\n+const SAMPLE_SIZE = 1000;\n+\n+export async function validateV2Parity(pool: Pool): Promise<ValidationResult> {\n+  const sample = await pool.query<{ id: string; invoice_id: string; status: string }>(\n+    `SELECT id, invoice_id, status FROM billing_events\n+     ORDER BY random()\n+     LIMIT $1`,\n+    [SAMPLE_SIZE]\n+  );\n+\n+  let mismatches = 0;\n+  const mismatchDetails: MismatchDetail[] = [];\n+\n+  for (const v1Row of sample.rows) {\n+    const v2Row = await pool.query(\n+      `SELECT invoice_id, status, processor_response\n+       FROM billing_events_v2\n+       WHERE external_event_id = (\n+         SELECT external_event_id FROM billing_events WHERE id = $1\n+       )`,\n+      [v1Row.id]\n+    );\n+\n+    if (v2Row.rowCount === 0) {\n+      mismatches++;\n+      mismatchDetails.push({ v1Id: v1Row.id, reason: \"missing_in_v2\" });\n+      continue;\n+    }\n+\n+    const v2 = v2Row.rows[0];\n+    if (v2.invoice_id !== v1Row.invoice_id || v2.status !== v1Row.status) {\n+      mismatches++;\n+      mismatchDetails.push({ v1Id: v1Row.id, reason: \"field_mismatch\", v2 });\n+    }\n+\n+    if (!v2.processor_response) {\n+      mismatches++;\n+      mismatchDetails.push({ v1Id: v1Row.id, reason: \"null_processor_response\" });\n+    }\n+  }\n+\n+  metrics.gauge(\"billing.validation.mismatch_count\", mismatches);\n+\n+  return {\n+    sampleSize: sample.rowCount,\n+    mismatches,\n+    mismatchDetails,\n+    passedValidation: mismatches === 0,\n+  };\n+}"
+      }
+    ],
+    "tests": [
+      "returns passedValidation: true when all sampled rows have matching v2 rows",
+      "counts missing_in_v2 rows as mismatches",
+      "counts rows with null processor_response as mismatches",
+      "emits billing.validation.mismatch_count gauge"
+    ],
+    "review_notes": [
+      "Sahib asked whether random() sampling would be repeatable for debugging; Arnav added an optional seed parameter.",
+      "Rayan approved the support handoff doc after Arnav added a concrete query example for the invoice.paid lookup pattern.",
+      "Jonas noted the validation job should be runnable as a dry-run in production without needing a deploy; Arnav confirmed it is read-only and can be invoked via the ops-console."
+    ]
+  }
+]

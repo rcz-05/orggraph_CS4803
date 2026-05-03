@@ -1,0 +1,291 @@
+[
+  {
+    "id": "jira:PAY-312",
+    "key": "PAY-312",
+    "type": "Story",
+    "title": "Prevent duplicate checkout captures during mobile retry storms",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "rayan",
+    "created": "2026-01-28",
+    "resolved": "2026-02-10",
+    "description": "Mobile checkout clients retry aggressively on flaky networks. When Stripe returned transient 5xx responses, retries could double-submit capture requests. Add an idempotency contract to checkout capture and ensure processor fallback cannot double-capture.",
+    "acceptance_criteria": [
+      "Retries return the original capture result when the idempotency key matches.",
+      "Processor fallback is allowed only when the idempotency record is present.",
+      "Rollout dashboard tracks replay hit rate, duplicate prevention count, and p99 capture latency."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "Implementation landed behind payments.checkout_idempotent_capture. Canary on 5% of mobile checkout traffic starts tomorrow morning.",
+        "date": "2026-02-08"
+      },
+      {
+        "author": "rayan",
+        "body": "48h canary looks clean. replay_hit_rate peaked at 3.8%, duplicate capture counter stayed at zero.",
+        "date": "2026-02-10"
+      }
+    ]
+  },
+  {
+    "id": "jira:PAY-328",
+    "key": "PAY-328",
+    "type": "Task",
+    "title": "Write checkout capture incident runbook and rollback plan",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "jonas",
+    "created": "2026-02-12",
+    "resolved": "2026-02-18",
+    "description": "Document dashboard links, owner handoff, rollback command, Stripe fallback states, and common replay/idempotency failure modes for checkout capture incidents.",
+    "comments": [
+      {
+        "author": "jonas",
+        "body": "Runbook is clear. Removing cart_id from dashboard labels also avoids a metric cardinality blowup.",
+        "date": "2026-02-18"
+      }
+    ]
+  },
+  {
+    "id": "jira:PLAT-441",
+    "key": "PLAT-441",
+    "type": "Story",
+    "title": "Add SLO-aware canary pause policy for payment-critical deploys",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "sahib",
+    "created": "2026-02-24",
+    "resolved": "2026-03-11",
+    "description": "Payment service deploys need stronger rollout controls than ordinary internal tools. Add service.yaml-driven canary pause policies for p99 latency, error rate, and fallback metrics. Include owner handoff and rollback instructions in the pause alert.",
+    "acceptance_criteria": [
+      "Policy thresholds live in service.yaml and pass schema validation.",
+      "Payment-critical services require rollback owner metadata before production deploy.",
+      "Canary pauses include dashboard link, failing SLO window, and rollback command."
+    ],
+    "comments": [
+      {
+        "author": "sahib",
+        "body": "This unblocks us from using the same deploy orchestrator for checkout-gateway and ledger-sync.",
+        "date": "2026-03-11"
+      }
+    ]
+  },
+  {
+    "id": "jira:PAY-341",
+    "key": "PAY-341",
+    "type": "Story",
+    "title": "Add merchant-scoped capture latency and replay metrics to checkout observability",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "priya",
+    "created": "2026-02-13",
+    "resolved": "2026-02-21",
+    "description": "The February 14th Stripe degradation exposed a gap: our only capture signal was a single global error rate counter. We could not distinguish a merchant-level retry storm from broad processor degradation until customer support escalated three hours in. Instrument the checkout capture funnel with merchant-level p50/p95/p99 latency histograms, replay hit rate, and fallback success rate. Metrics must feed the checkout-reliability Grafana dashboard and the capture incident runbook must link to the new panels.",
+    "acceptance_criteria": [
+      "Capture latency histogram is tagged by merchant_id and processor.",
+      "Metric labels do not include cart_id or any field with unbounded cardinality.",
+      "Replay hit rate and fallback success rate are tracked as separate counters, not derived from logs.",
+      "Grafana dashboard panels are linked from the capture incident runbook.",
+      "Test asserts emitted metric names match runbook examples."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "Had cart_id in the initial label set — caught during review and removed. Pushed an ADR note to the observability docs explaining the cardinality policy for checkout metrics.",
+        "date": "2026-02-19"
+      },
+      {
+        "author": "priya",
+        "body": "Dashboard is live and linked from the runbook. Used it during a small Stripe latency spike yesterday — identified the affected merchant within 90 seconds. This is a meaningful improvement over the previous process.",
+        "date": "2026-02-21"
+      },
+      {
+        "author": "rayan",
+        "body": "Opening a follow-up ticket to add SLO burn-rate alerting on replay_hit_rate once we have two weeks of baseline data.",
+        "date": "2026-02-21"
+      }
+    ]
+  },
+  {
+    "id": "jira:BILL-219",
+    "key": "BILL-219",
+    "type": "Bug",
+    "title": "Stripe re-delivered invoice.paid events causing duplicate billing credits",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "jonas",
+    "created": "2026-02-09",
+    "resolved": "2026-02-24",
+    "description": "Post-incident report from February 7th: a consumer restart during a Kafka lag spike caused the billing-event-pipeline to re-process 38 invoice.paid events that Stripe had previously delivered. Affected billing periods received duplicate credits. The root cause is that the consumer does not check whether an event has already been applied before calling invoiceService.applyEvent. Stripe's documented retry window is up to 72 hours, so a single consumer restart is sufficient to reproduce this. Immediate mitigation was a manual correction script run by the billing ops team. Permanent fix is event-level deduplication in the consumer before any downstream writes.",
+    "acceptance_criteria": [
+      "Consumer checks a Redis fingerprint store before calling invoiceService.applyEvent.",
+      "Fingerprint key is derived from event_type, external_event_id, and billing_period_id.",
+      "Redis TTL is set to at least 72 hours to cover Stripe's full retry window.",
+      "Deduplicated events are acked immediately and counted in billing.webhook.deduplicated_events split by event_type.",
+      "A consumer restart followed by re-delivery of the same event does not produce a second invoice apply."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "Confirmed Stripe's retry window is 72h from their webhook retry docs — aligning the Redis TTL to that rather than 48h. Priya had the same question in PR review; added a comment in the code citing the Stripe docs.",
+        "date": "2026-02-14"
+      },
+      {
+        "author": "arnav-chintawar",
+        "body": "Deployed to staging. Ran a manual re-delivery simulation using the mock Stripe server: 200 invoice.paid events re-delivered after a simulated consumer restart, zero duplicate applies, 200 counted in deduplicated_events.",
+        "date": "2026-02-20"
+      },
+      {
+        "author": "jonas",
+        "body": "billing.webhook.deduplicated_events is averaging 140/day in production in the first week after rollout. That matches our rough estimate from the incident post-mortem. Closing.",
+        "date": "2026-02-24"
+      }
+    ]
+  },
+  {
+    "id": "jira:BILL-224",
+    "key": "BILL-224",
+    "type": "Spike",
+    "title": "Investigate broken trace context between Stripe webhook producer and billing consumer",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "sahib",
+    "created": "2026-02-10",
+    "resolved": "2026-02-19",
+    "description": "During the February 7th billing incident, every billing consumer span appeared as an orphaned root span in Grafana Tempo. We could not correlate consumer failures back to the originating Stripe webhook or the checkout session that triggered them. This spike should determine why trace context is not propagating across the Kafka boundary, evaluate the correct OTel propagation approach for Kafkajs consumers, and produce a concrete implementation proposal. Time-box to three days.",
+    "acceptance_criteria": [
+      "Identify why consumer spans are orphaned in Tempo — missing header injection, incorrect carrier format, or consumer not extracting context.",
+      "Confirm which OTel propagation format upstream Kafka producers are using (W3C traceparent vs B3).",
+      "Produce a design note covering the KafkaPropagator implementation, span naming, required attributes, and error recording approach.",
+      "Estimate implementation effort and identify any OTel SDK version constraints in the billing-event-pipeline package.json."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "Root cause confirmed: the billing consumer was not reading Kafka message headers at all. Upstream producers inject W3C traceparent as a UTF-8 message header, consistent with OTel Kafka semantic conventions. The fix is a KafkaPropagator utility that extracts headers into an OTel context before the span is created. Design note posted in Confluence. Implementation is straightforward — no SDK version issues. Estimating 2 days to implement plus tests.",
+        "date": "2026-02-14"
+      },
+      {
+        "author": "sahib",
+        "body": "Design note looks good. The withKafkaSpan wrapper approach keeps the propagation logic out of the consumer business logic, which is the right call. Greenlit for implementation under BILL-224.",
+        "date": "2026-02-15"
+      },
+      {
+        "author": "arnav-chintawar",
+        "body": "Implementation shipped in PR #2309. Validated in Tempo: consumer spans now show a complete parent-child chain from the Stripe webhook delivery through Kafka to the Postgres write. Mean investigation time during the three post-rollout incidents dropped from ~25 minutes to under 5 minutes per on-call notes.",
+        "date": "2026-02-19"
+      }
+    ]
+  },
+  {
+    "id": "jira:DX-77",
+    "key": "DX-77",
+    "type": "Story",
+    "title": "Reduce billing-event-pipeline local setup from half a day to under 15 minutes",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "priya",
+    "created": "2026-03-01",
+    "resolved": "2026-03-15",
+    "description": "Three engineers onboarded to billing-event-pipeline in Q1 each spent 3-5 hours on local setup, primarily blocked on Kafka topic configuration, Postgres migration sequencing, and locating the correct Stripe webhook secret format. The process was undocumented and required asking in Slack. This story covers a single-command bootstrap script, a mock Stripe webhook server, and typed env config validation so misconfigured environments fail loudly at startup rather than silently misbehaving at runtime. Success metric: a new engineer can run npm run bootstrap:local and have a working local consumer within 15 minutes without Slack assistance.",
+    "acceptance_criteria": [
+      "npm run bootstrap:local provisions Postgres schema, Kafka topics, and seed data in sequence without manual steps.",
+      "Mock Stripe server starts on a fixed port and supports the webhook event shapes used in local development.",
+      "Typed Zod config validation fails at startup with a structured error listing every invalid or missing field.",
+      "Bootstrap script aborts if NODE_ENV is not 'local' or 'test', and checks database hostname as a secondary guard.",
+      "Local dev setup guide is updated and replaces the outdated wiki page.",
+      "Three engineers outside the billing team validate the bootstrap flow and report setup time."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "The Zod config validation caught a STRIPE_WEBHOOK_SECRET misconfiguration in staging that had been silently falling back to an empty string. That's a nice bonus beyond the local dev story.",
+        "date": "2026-03-10"
+      },
+      {
+        "author": "priya",
+        "body": "Ran the bootstrap script on a clean machine. Took 8 minutes including npm install. The mock Stripe introspection endpoint at /v1/webhooks/sent is useful for debugging locally without tailing Kafka. Adding it to the integration test harness.",
+        "date": "2026-03-13"
+      },
+      {
+        "author": "sahib",
+        "body": "The Zod config pattern should be added to the platform service template. Opened PLAT-471 to track extraction. This was blocking two engineers on the fraud team who were trying to run billing-pipeline locally for a cross-service test — they confirmed it now works without any Slack thread.",
+        "date": "2026-03-15"
+      }
+    ]
+  },
+  {
+    "id": "jira:BILL-198",
+    "key": "BILL-198",
+    "type": "Epic",
+    "title": "Migrate billing_events to v2 schema with normalized processor_response",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "jonas",
+    "created": "2026-02-25",
+    "resolved": "2026-03-29",
+    "description": "The billing_events table stores Stripe-specific response fields as five separate nullable columns (stripe_charge_id, stripe_invoice_id, stripe_customer_id, stripe_error_code, stripe_error_message). This schema cannot accommodate a second payment processor without another migration and makes the processor_response contract opaque to downstream consumers. The v2 schema normalizes these into a single processor_response JSONB column. The migration must be fully staged to avoid any read availability gap: deploy v2 table, enable dual-writes, run a batched backfill with resume capability, validate parity, then retire the v1 read path. The support team must be briefed before the v1 read path is retired because their SQL queries reference the v1 column names directly. Rollback must be possible at every phase.",
+    "acceptance_criteria": [
+      "v2 table deployed with partial index on (billing_period_id, created_at) WHERE status = 'pending' and unique index on (billing_period_id, external_event_id).",
+      "Dual-write is gated behind the BILLING_SCHEMA_V2_WRITES feature flag and can be disabled without a deploy.",
+      "Backfill job supports cursor-based resume after failure and pauses automatically if per-batch error rate exceeds 5%.",
+      "Validation job samples at least 1000 random v1 rows and asserts invoice_id, status, and non-null processor_response match.",
+      "Go/no-go checklist documented: mismatch count zero, dual-write flag active for 48+ hours, rollback owner named.",
+      "Support team handoff doc covers processor_response JSONB shape and equivalent queries for the three most common support workflows.",
+      "v1 read path is not retired until the support team lead signs off."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "Completed a design review with the data-eng team. They confirmed the JSONB approach is consistent with how audit_events and fraud_signals handle processor payloads. No objections to the partial index design. Proceeding with the migration plan as written.",
+        "date": "2026-03-04"
+      },
+      {
+        "author": "arnav-chintawar",
+        "body": "Dual-write has been live in production for 72 hours. billing.event_writer.v2_write_failed has not fired once. Backfill job ran overnight: 1.2M rows processed, cursor-resume triggered once after a Redis blip, zero rows dropped. Validation job sampled 1000 rows: 0 mismatches. Go/no-go checklist is green. Scheduling support team handoff for tomorrow.",
+        "date": "2026-03-27"
+      },
+      {
+        "author": "rayan",
+        "body": "Support team lead reviewed the handoff doc and had no questions on the new query patterns. v1 read path retirement is approved for the next deploy window.",
+        "date": "2026-03-28"
+      },
+      {
+        "author": "jonas",
+        "body": "v1 read path retired. No alerts fired. Closing the epic. This unblocks the Adyen processor integration that was blocked on schema flexibility.",
+        "date": "2026-03-29"
+      }
+    ]
+  },
+  {
+    "id": "jira:PLAT-452",
+    "key": "PLAT-452",
+    "type": "Task",
+    "title": "Rehearse rollback for checkout-gateway canary using new guardrail tooling",
+    "status": "Done",
+    "assignee": "arnav-chintawar",
+    "reporter": "sahib",
+    "created": "2026-03-12",
+    "resolved": "2026-03-19",
+    "description": "Before enabling the progressive rollout guardrails for checkout-gateway in production, the on-call rotation needs to rehearse the canary-pause-to-rollback flow so the Slack notification, rollback command, and dashboard link are familiar under real conditions. This task covers a scheduled rollback rehearsal on staging: trigger a synthetic SLO breach, confirm the pause notification fires with correct content, and execute the rollback command. Document the outcome and any gaps found in the runbook.",
+    "acceptance_criteria": [
+      "Synthetic p99 breach triggers a canary pause notification within one SLO evaluation window (2 minutes).",
+      "Slack notification includes rollback owner name, dashboard deep link, and exact rollback command.",
+      "Rollback command executes successfully on staging and is confirmed by at least two on-call engineers.",
+      "Any runbook gaps found during rehearsal are resolved before production enablement."
+    ],
+    "comments": [
+      {
+        "author": "arnav-chintawar",
+        "body": "Rehearsal completed with Rayan and Jonas. The pause notification fired in 90 seconds. One gap found: the dashboard deep link was pointing at the staging Grafana instance, not production. Fixed the link template in notifications.ts before production rollout.",
+        "date": "2026-03-17"
+      },
+      {
+        "author": "sahib",
+        "body": "Good catch on the dashboard link. Runbook updated. Both engineers confirmed they could execute the rollback command without referring to any additional docs. Marking done — production guardrails are enabled.",
+        "date": "2026-03-19"
+      }
+    ]
+  }
+]

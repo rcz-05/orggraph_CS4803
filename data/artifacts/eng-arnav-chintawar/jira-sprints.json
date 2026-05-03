@@ -1,0 +1,129 @@
+[
+  {
+    "id": "jira:sprint:PAY-S42",
+    "key": "PAY-S42",
+    "type": "Sprint",
+    "name": "Checkout Reliability Sprint 42",
+    "status": "Closed",
+    "team": "payments-architecture",
+    "start_date": "2026-02-01",
+    "end_date": "2026-02-14",
+    "goal": "Make checkout capture retries safe before the mobile app retry-policy launch.",
+    "owned_by": "arnav-chintawar",
+    "completed_issues": ["PAY-312"],
+    "carryover_issues": ["PAY-328"],
+    "summary": "Arnav led implementation of idempotent checkout capture and processor fallback guardrails. The sprint shipped a 48h canary with zero duplicate captures and added metrics for replay hit rate and capture latency.",
+    "demo_notes": [
+      "Showed replay-safe retry behavior with simulated Stripe 5xx responses using the local mock processor.",
+      "Walked through why the fallback routing path checks idempotency state before re-submitting to the processor.",
+      "Demonstrated the checkout-reliability Grafana dashboard with replay_hit_rate at 3.8% during peak canary traffic."
+    ],
+    "retro_notes": [
+      "What went well: explicit replay contract reduced ambiguity across mobile, payments, and fraud teams before the retry-policy launch.",
+      "Improve: involve SRE earlier on metric label cardinality — the cart_id issue was caught late in review and could have caused a cardinality incident in production."
+    ]
+  },
+  {
+    "id": "jira:sprint:PAY-S43",
+    "key": "PAY-S43",
+    "type": "Sprint",
+    "name": "Checkout Observability and Runbook Hardening",
+    "status": "Closed",
+    "team": "payments-architecture",
+    "start_date": "2026-02-15",
+    "end_date": "2026-02-28",
+    "goal": "Close the observability gap exposed by the February 14th Stripe degradation and finish the capture incident runbook.",
+    "owned_by": "arnav-chintawar",
+    "completed_issues": ["PAY-328", "PAY-341", "OBS-88"],
+    "carryover_issues": [],
+    "summary": "Arnav finished the capture incident runbook carried over from Sprint 42 and shipped merchant-scoped latency and replay metrics. The February 14th Stripe degradation had revealed that a single global error rate counter could not distinguish merchant-level retry storms from broad processor issues. The new dashboards were live and linked from the runbook before the sprint ended. During a small Stripe latency spike mid-sprint, on-call identified the affected merchant within 90 seconds using the new panels, down from a three-hour escalation path in the prior incident.",
+    "demo_notes": [
+      "Showed the checkout-reliability dashboard filtering by merchant_id to isolate a simulated retry storm to a single merchant while global error rate stayed flat.",
+      "Walked through the runbook section on replay_hit_rate spikes: how to read the panel, what threshold warrants a page, and what the rollback command is.",
+      "Explained why cart_id was excluded from metric labels and pointed to the observability ADR added this sprint."
+    ],
+    "retro_notes": [
+      "What went well: writing the test that asserts emitted metric names match runbook examples caught a naming inconsistency before the dashboard was published — saved an on-call debugging session.",
+      "Improve: the February 14th incident took three hours to escalate partly because there was no SLO burn-rate alert on replay_hit_rate. Opened a follow-up ticket to add this once we have two weeks of baseline data."
+    ]
+  },
+  {
+    "id": "jira:sprint:BILL-S11",
+    "key": "BILL-S11",
+    "type": "Sprint",
+    "name": "Billing Event Reliability Sprint 11",
+    "status": "Closed",
+    "team": "billing-platform",
+    "start_date": "2026-02-09",
+    "end_date": "2026-02-22",
+    "goal": "Eliminate duplicate billing credits from Stripe event re-delivery and restore end-to-end trace visibility in Grafana Tempo.",
+    "owned_by": "arnav-chintawar",
+    "completed_issues": ["BILL-219", "BILL-224"],
+    "carryover_issues": ["OBS-91"],
+    "summary": "Arnav addressed both root causes from the February 7th billing incident post-mortem. The deduplication fix suppressed 140 Stripe re-deliveries per day in the first week after rollout. The OTel trace propagation fix connected previously orphaned billing consumer spans back to their originating Stripe webhook and checkout session in Tempo. Three incidents were handled after rollout with a mean investigation time under five minutes, compared to approximately 25 minutes before. The OTel metric for traceparent-missing producers was deferred and carried into the next sprint as OBS-91.",
+    "demo_notes": [
+      "Ran a simulated consumer restart followed by re-delivery of 200 invoice.paid events: zero duplicate applies, all 200 counted in billing.webhook.deduplicated_events.",
+      "Showed a Grafana Tempo waterfall for a complete billing event flow: Stripe webhook delivery → Kafka → consumer deduplication check → Postgres write, all in a single connected trace.",
+      "Highlighted the span exception recording behavior when invoiceService.applyEvent throws — the error is recorded on the span before re-throwing, so failures are traceable without log correlation."
+    ],
+    "retro_notes": [
+      "What went well: the spike on trace context (BILL-224) was time-boxed to three days and produced a concrete design note before any implementation started — this avoided rework when the OTel span status code issue was caught in review.",
+      "Improve: the OTel span status codes were using raw integers instead of the SpanStatusCode enum in the initial implementation — a correctness risk if enum values shift. Adding an OTel SDK usage lint rule to the billing-platform eslint config is on the backlog.",
+      "Improve: we did not have a metric for Kafka messages with missing traceparent headers until Jonas raised it in PR review. Carrying OBS-91 forward to instrument this before the next processor integration."
+    ]
+  },
+  {
+    "id": "jira:sprint:PLAT-S18",
+    "key": "PLAT-S18",
+    "type": "Sprint",
+    "name": "Payment-Critical Deploy Guardrails and Developer Bootstrap",
+    "status": "Closed",
+    "team": "platform-experience",
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-15",
+    "goal": "Bring payment-critical services onto progressive rollout policies and reduce billing-pipeline local setup to under 15 minutes.",
+    "owned_by": "arnav-chintawar",
+    "completed_issues": ["PLAT-441", "PLAT-452", "DX-77"],
+    "carryover_issues": ["PLAT-471"],
+    "summary": "Arnav shipped two separate workstreams this sprint. The deploy orchestrator work added service.yaml-driven canary pause policies with SLO-aware rollback handoff, and a rollback rehearsal on staging caught a broken dashboard deep link before production enablement. The developer tooling work shipped a single-command bootstrap for billing-event-pipeline: three engineers outside the billing team validated it and reported setup times between 7 and 10 minutes, down from 3-5 hours. The Zod config validation work unexpectedly caught a STRIPE_WEBHOOK_SECRET misconfiguration in staging that had been silently falling back to an empty string. Extracting the Zod config pattern into the platform service template was scoped but deferred as PLAT-471.",
+    "demo_notes": [
+      "Triggered a synthetic p99 latency breach in the staging canary and showed the Slack pause notification arriving within 90 seconds with rollback owner name, dashboard deep link, and exact rollback command.",
+      "Executed the rollback command live in staging during sprint review to confirm the flow end-to-end.",
+      "Ran npm run bootstrap:local on a clean machine during the demo and timed setup at 8 minutes including npm install.",
+      "Showed the Zod startup error output listing every misconfigured field when STRIPE_WEBHOOK_SECRET was intentionally set to an invalid value."
+    ],
+    "retro_notes": [
+      "What went well: the rollback rehearsal (PLAT-452) found the broken Grafana dashboard link before production rollout — this would have been a friction point for on-call under real incident conditions.",
+      "What went well: scoping the bootstrap spike to three days and validating with real engineers outside the team gave the DX-77 success metric credibility with the platform leadership review.",
+      "Improve: PLAT-471 (extracting Zod config to platform template) was agreed on during sprint review but wasn't scoped in time to start this sprint. It's blocking two teams who want the pattern. Prioritizing it as the first item next sprint.",
+      "Improve: the NODE_ENV guard on the bootstrap script was added reactively after Priya raised the staging database risk in review — this kind of safety check should be part of the bootstrap script template from the start."
+    ]
+  },
+  {
+    "id": "jira:sprint:BILL-S14",
+    "key": "BILL-S14",
+    "type": "Sprint",
+    "name": "Billing Schema Migration Sprint 14",
+    "status": "Closed",
+    "team": "billing-platform",
+    "start_date": "2026-03-16",
+    "end_date": "2026-03-29",
+    "goal": "Complete all three phases of the billing_events v2 migration and get sign-off from data-eng, support, and SRE before retiring the v1 read path.",
+    "owned_by": "arnav-chintawar",
+    "completed_issues": ["BILL-198", "BILL-207", "BILL-215"],
+    "carryover_issues": [],
+    "summary": "Arnav executed the staged billing_events v2 migration across three phases within the sprint. Phase 1 deployed the v2 table with dual-writes behind the BILLING_SCHEMA_V2_WRITES feature flag. Phase 2 ran the batched backfill job against 1.2M production rows using a cursor-based resume mechanism; the job paused once after a Redis blip and resumed without data loss. Phase 3 ran the validation job: 0 mismatches across a 1000-row sample. The support team lead reviewed the handoff document and confirmed the new processor_response JSONB query patterns before the v1 read path was retired. billing.event_writer.v2_write_failed never fired during the dual-write window. Retiring the v1 read path unblocked the Adyen processor integration that had been blocked on schema flexibility for two quarters.",
+    "demo_notes": [
+      "Walked through the three-phase migration sequence on a shared screen with data-eng and SRE present: table creation with partial index rationale, dual-write flag toggle, backfill job cursor-resume behavior after a simulated failure, and validation job output.",
+      "Showed the billing.backfill.batch_error_rate gauge staying at zero throughout the production backfill run.",
+      "Demonstrated the go/no-go checklist live: mismatch count zero, dual-write flag active 72 hours, rollback owner named — all green.",
+      "Showed the support handoff doc and walked through the equivalent SQL query for the most common invoice.paid lookup pattern in v2."
+    ],
+    "retro_notes": [
+      "What went well: the 5% batch error rate auto-pause threshold gave SRE confidence to let the backfill job run overnight without monitoring it. No pages fired.",
+      "What went well: writing the support handoff doc before the v1 read path retirement, not after, meant the support team lead had no questions at sign-off. This was faster than expected.",
+      "Improve: Promise.all in the dual-write path rejects fast on v2 failures, which was intentional, but the alert threshold on billing.event_writer.v2_write_failed wasn't set until Priya raised it in PR review. Alert thresholds should be part of the feature flag rollout checklist.",
+      "Improve: the validation job uses ORDER BY random() which isn't reproducible for debugging specific mismatches. The optional seed parameter was added reactively. Should be in the initial design for any sampling-based validation job going forward."
+    ]
+  }
+]

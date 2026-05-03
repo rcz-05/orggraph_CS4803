@@ -4,7 +4,7 @@ import {
   consumeState,
   exchangeCodeForToken,
   setTokenCookie,
-} from "@/lib/github-oauth";
+} from "@/lib/jira-oauth";
 
 export const dynamic = "force-dynamic";
 
@@ -24,28 +24,32 @@ export async function GET(req: NextRequest) {
   const state = search.get("state");
   const error = search.get("error");
 
-  // We always consume return_to so it doesn't leak to a subsequent attempt.
   const returnTo = await consumeReturnTo();
 
   if (error) {
-    // User clicked "Cancel" on the GitHub consent screen.
-    return redirectWith(req, returnTo, { gh: "cancelled" });
+    return redirectWith(req, returnTo, { jira: "cancelled" });
   }
   if (!code || !state) {
-    return redirectWith(req, returnTo, { gh: "error", reason: "missing_params" });
+    return redirectWith(req, returnTo, {
+      jira: "error",
+      reason: "missing_params",
+    });
   }
 
   const expected = await consumeState();
   if (!expected || expected !== state) {
-    return redirectWith(req, returnTo, { gh: "error", reason: "bad_state" });
+    return redirectWith(req, returnTo, { jira: "error", reason: "bad_state" });
   }
 
   try {
     const token = await exchangeCodeForToken(code);
     await setTokenCookie(token);
-    return redirectWith(req, returnTo, { gh: "connected" });
+    return redirectWith(req, returnTo, { jira: "connected" });
   } catch (err) {
-    console.error("GitHub OAuth callback failed:", err);
-    return redirectWith(req, returnTo, { gh: "error", reason: "exchange_failed" });
+    console.error("Jira OAuth callback failed:", err);
+    return redirectWith(req, returnTo, {
+      jira: "error",
+      reason: "exchange_failed",
+    });
   }
 }
